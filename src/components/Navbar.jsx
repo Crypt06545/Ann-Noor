@@ -22,9 +22,7 @@ const Navbar = () => {
 
   useGSAP(() => {
     const tl = gsap.timeline();
-    tl.from(".logo, .mobile-icon", { y: -10, opacity: 0, duration: 1, delay: 0.2 });
-    tl.from(".nav-link", { opacity: 0, y: -25, duration: 0.54, stagger: 0.2 }, "-=0.5");
-    tl.from(".dev-icons", { opacity: 0, y: -20, duration: 1 });
+    tl.from(".logo, .mobile-icon, .nav-link , .dev-icons", { y: -40, opacity: 0, duration: 1, delay: 0.5,stagger:0.15 });
   }, []);
 
   useEffect(() => {
