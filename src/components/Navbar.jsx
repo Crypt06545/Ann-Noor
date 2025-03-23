@@ -1,5 +1,5 @@
 import { useGSAP } from "@gsap/react";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FiHeart, FiShoppingBag, FiUser } from "react-icons/fi";
 import { NavLink } from "react-router-dom";
 import gsap from "gsap";
