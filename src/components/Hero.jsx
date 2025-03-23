@@ -8,25 +8,38 @@ const Hero = () => {
   const tl = gsap.timeline();
 
   useGSAP(() => {
-    tl.from(".h-left-div", {
-      x: -300,
-      opacity: 0,
-      duration: 0.7,
-      delay: 0.8,
-    },'-=0.3'); 
+    // lef div animation
+    tl.from(
+      ".h-left-div",
+      {
+        x: -300,
+        opacity: 0,
+        duration: 0.7,
+        delay: 0.8,
+      },
+      "-=0.3"
+    );
+    // texts animation
     tl.from(".details", {
       x: -200,
       opacity: 0,
       duration: 0.4,
-    });    
+    });
+    // buttons animation
     tl.from(".button-container", {
       opacity: 0,
       duration: 0.4,
     });
-    tl.from(".right-div", {
-      opacity: 0,
-      duration: 0.5,
-    },"-=0.5");
+
+    // image product animation
+    tl.from(
+      ".right-div",
+      {
+        opacity: 0,
+        duration: 0.5,
+      },
+      "-=0.5"
+    );
   }, []);
 
   return (
@@ -53,7 +66,7 @@ const Hero = () => {
             {/* oreder button  */}
             <button className="px-6 py-3 lg:px-7 lg:py-3.5 rounded-lg text-black font-medium bg-amber-500 hover:bg-amber-600 cursor-pointer shadow-lg hover:shadow-amber-500/20 flex items-center transition group active:scale-95 active:shadow-inner">
               <MdOutlineShoppingCart className="mr-2 lg:mr-3 text-lg lg:text-xl group-hover:rotate-12 transition-transform" />
-              <span className="text-base lg:text-xl">Shop Now</span>
+              <span className="text-base lg:text-xl ">Shop Now</span>
             </button>
 
             {/* oreder button  */}
@@ -71,6 +84,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      {/* bounce effect */}
       <div className="button-container hidden md:block absolute bottom-8 left-8 lg:bottom-36 lg:left-10 animate-bounce">
         <div className="bg-neutral-900 text-white px-2.5 py-1.5 rounded-lg text-xs lg:text-sm flex items-center shadow-lg">
           <MdOutlineShoppingCart className="mr-1 text-amber-500" />
