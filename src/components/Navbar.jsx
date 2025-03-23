@@ -22,7 +22,7 @@ const Navbar = () => {
 
   useGSAP(() => {
     const tl = gsap.timeline();
-    tl.from(".logo", { y: -10, opacity: 0, duration: 1, delay: 0.2 });
+    tl.from(".logo, .mobile-icon", { y: -10, opacity: 0, duration: 1, delay: 0.2 });
     tl.from(".nav-link", { opacity: 0, y: -25, duration: 0.54, stagger: 0.2 }, "-=0.5");
     tl.from(".dev-icons", { opacity: 0, y: -20, duration: 1 });
   }, []);
@@ -58,7 +58,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Icons */}
-        <button onClick={toggleNav} className="md:hidden text-xl">
+        <button onClick={toggleNav} className="mobile-icon md:hidden text-xl">
           {isOpen ? <AiOutlineClose /> : <FaBars />}
         </button>
 
