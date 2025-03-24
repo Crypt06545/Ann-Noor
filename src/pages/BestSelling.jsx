@@ -1,6 +1,6 @@
 import React from "react";
 import atorImg from "../assets/images/ator.png";
-import ActiveLastBreadcrumb from "../components/Breadcrumbs";
+
 
 const BestSelling = () => {
   return (
@@ -9,7 +9,6 @@ const BestSelling = () => {
         <h1 className="text-5xl font-robotoCondensed text-amber-500 text-center font-medium">
           Best Selling
         </h1>
-        <ActiveLastBreadcrumb/>
 
         {/* Card Container */}
         <div className="mt-20 border grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">

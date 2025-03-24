@@ -4,6 +4,7 @@ import atorR from "../assets/images/atorsec.png";
 
 import SwiperSlider from "../components/SwipperSlide";
 import { FaMinus, FaPlus } from "react-icons/fa";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
@@ -19,18 +20,19 @@ const ProductDetails = () => {
   return (
     <div className="bg-zinc-900 min-h-screen p-5 lg:p-16 flex justify-center items-center">
       <div className="w-full max-w-6xl">
+        <div className="mb-4">
+          <Breadcrumbs/>
+        </div>
         {/* Product Details Section */}
-        <div className="flex flex-col md:flex-row justify-center items-center gap-8">
+        <div className="flex flex-col md:flex-row mt-16 md:mt-0 lg:mt-0 justify-center items-center gap-8 mb-14">
           {/* Left: Image Slider */}
-          <div className="h-[400px] w-[400px] flex justify-center items-center">
+          <div className="lg:h-[400px] lg:w-[400px] w-[200px] h-[200px] mb-16 flex justify-center items-center">
             <SwiperSlider images={images} />
           </div>
 
           {/* Right: Product Info */}
           <div className="text-white flex flex-col space-y-6">
-            <h1 className="text-4xl font-bold text-emerald-500">
-              Luxurious Elixir
-            </h1>
+            <h1 className="text-4xl font-bold text-white">Luxurious Elixir</h1>
             <p className="text-gray-400 leading-relaxed">
               Lorem ipsum dolor sit amet consectetur adipisicing elit.
               Temporibus natus doloribus impedit odit, nam corporis aspernatur!
@@ -44,7 +46,7 @@ const ProductDetails = () => {
             </div>
 
             {/* Stock Availability */}
-            <div className="text-green-400 font-semibold mt-2">In Stock</div>
+            <div className="text-amber-500 font-semibold mt-2">In Stock</div>
 
             {/* Size Selection */}
             <div className="flex space-x-3 mt-4">
@@ -53,8 +55,8 @@ const ProductDetails = () => {
                   <button
                     className={`border-2 rounded-lg p-1 transition duration-200 ${
                       selectedSize === option.size
-                        ? "border-emerald-500 shadow-lg shadow-emerald-500/50"
-                        : "border-gray-600 hover:border-emerald-500"
+                        ? "border-amber-500 shadow-lg shadow-amber-500/10"
+                        : "border-gray-600 hover:border-amber-500"
                     }`}
                     onClick={() => setSelectedSize(option.size)}
                   >
@@ -72,8 +74,8 @@ const ProductDetails = () => {
             </div>
 
             {/* Price */}
-            <div className="text-2xl text-emerald-500 font-bold mt-4">
-              $250.00
+            <div className="text-2xl text-[#AB572D] font-bold mt-4">
+              <span className="text-4xl">250.00 ৳</span>
             </div>
 
             {/* Quantity Selector */}
@@ -81,14 +83,14 @@ const ProductDetails = () => {
               <span className="text-lg">Qty</span>
               <div className="flex items-center border border-gray-600 rounded-lg px-3">
                 <button
-                  className="px-3 text-lg font-bold hover:text-emerald-500 transition"
+                  className="px-3 text-lg font-bold hover:text-amber-500 transition cursor-pointer"
                   onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}
                 >
                   <FaMinus className="text-sm" />
                 </button>
-                <span className="px-4 text-lg">{quantity}</span>
+                <span className="px-4 text-lg text-amber-500">{quantity}</span>
                 <button
-                  className="px-3 text-lg font-bold hover:text-emerald-500 transition"
+                  className="px-3 text-lg font-bold cursor-pointer hover:text-amber-500 transition"
                   onClick={() => setQuantity((prev) => prev + 1)}
                 >
                   <FaPlus className="text-sm" />
@@ -99,7 +101,7 @@ const ProductDetails = () => {
             {/* Action Buttons */}
             <div className="flex space-x-4 mt-5">
               {/* Add to Bag Button */}
-              <button className="bg-emerald-500 text-black font-semibold py-3 rounded-lg text-lg hover:bg-emerald-700 transition duration-200 w-full">
+              <button className="bg-[#D9D9D9] text-[#AB572D] font-semibold py-3 rounded-lg text-lg hover:bg-[#a3a3a3] transition duration-200 cursor-pointer w-full active:scale-95">
                 Add to Bag
               </button>
 
