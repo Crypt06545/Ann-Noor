@@ -4,7 +4,7 @@ import atorR from "../assets/images/atorsec.png";
 
 import SwiperSlider from "../components/SwipperSlide";
 import { FaMinus, FaPlus } from "react-icons/fa";
-import Breadcrumbs from "../components/Breadcrumbs";
+// import Breadcrumbs from "../components/Breadcrumbs";
 
 const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
@@ -21,7 +21,7 @@ const ProductDetails = () => {
     <div className="bg-zinc-900 min-h-screen p-5 lg:p-16 flex justify-center items-center">
       <div className="w-full max-w-6xl">
         <div className="mb-4">
-          <Breadcrumbs/>
+          {/* <Breadcrumbs/> */}
         </div>
         {/* Product Details Section */}
         <div className="flex flex-col md:flex-row mt-16 md:mt-0 lg:mt-0 justify-center items-center gap-8 mb-14">

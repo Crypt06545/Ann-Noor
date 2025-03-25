@@ -4,6 +4,9 @@ import Errorpage from "../pages/Errorpage";
 import Home from "../pages/Home";
 import ProductPage from "../pages/ProductDetails";
 import ProDemo from "../pages/ProDemo";
+import DashLayout from "../layouts/DashLayout";
+import AddProduct from "../pages/Dashboard/AddProduct";
+import Statics from "../pages/Dashboard/Statics";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +22,20 @@ const router = createBrowserRouter([
         path: "/products",
         // element: <ProductPage />,
         element: <ProDemo />,
+      },
+    ],
+  },
+  {
+    path: "dashboard",
+    element: <DashLayout />,
+    children: [
+      {
+        path: "add-product",
+        element: <AddProduct />,
+      },
+      {
+        path: "statistics",
+        element: <Statics />,
       },
     ],
   },

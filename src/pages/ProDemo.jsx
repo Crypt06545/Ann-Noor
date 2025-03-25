@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import Divider from "@mui/material/Divider";
-import { Button } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import atorImg from "../assets/images/atorsec.png";
+import { Link } from "react-router-dom";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
 
 const ProDemo = () => {
   const [productPrice, setProductPrice] = useState(200.67);
@@ -11,13 +13,20 @@ const ProDemo = () => {
 
   return (
     <div className="bg-zinc-900 min-h-screen p-4 md:p-5">
+      {/* breadcrumbs  */}
       <div>
-        <h1 className="text-white text-xl">This is heading</h1>
+        <Breadcrumbs aria-label="breadcrumb" className="!text-gray-200">
+          <Link to={"/"} className="hover:underline">
+            Home
+          </Link>
+          <Link>Products</Link>
+          <Typography className="!text-gray-200">Breadcrumbs</Typography>
+        </Breadcrumbs>
       </div>
 
       <div className="flex flex-col md:flex-row gap-5 mt-8 justify-between mb-10">
         {/* Image section - responsive sizing */}
-        <div className="border w-full md:w-[50%] h-[300px] sm:h-[400px] md:h-[580px] flex justify-center items-center bg-amber-200 mx-auto">
+        <div className="w-full md:w-[50%] h-[300px] sm:h-[400px] md:h-[580px] flex justify-center items-cente mx-auto">
           <div className="flex justify-center items-center">
             <img
               src={atorImg}
