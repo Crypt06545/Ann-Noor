@@ -2,40 +2,45 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
 const AddProduct = () => {
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       name: "",
-      description: "",
+      perfumeTitle: "",
+      fragranceNotes: "",
+      lastingTime: "",
+      smellProjection: "",
+      usage: "",
       price: "",
       quantity: "",
       stockStatus: "inStock",
       category: "",
-      brand: "",
       images: [],
       sku: "",
       tags: [],
-    }
+    },
   });
 
   const [tagInput, setTagInput] = useState("");
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]); // Only store File objects
   const [tags, setTags] = useState([]);
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const previews = files.map((file) => URL.createObjectURL(file));
+    if (files.length === 0) return;
 
-    setImagePreviews((prev) => {
-      prev.forEach((url) => URL.revokeObjectURL(url));
-      return [...previews];
-    });
-
-    // React Hook Form will handle the files through the register
+    // Only store the File objects
+    setImageFiles((prev) => [...prev, ...files]);
   };
 
   const removeImage = (index) => {
-    URL.revokeObjectURL(imagePreviews[index]);
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    // Simply remove the file from the array
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleTagAdd = (event) => {
@@ -59,15 +64,24 @@ const AddProduct = () => {
     const formData = {
       ...data,
       tags,
-      images: imagePreviews.length // In a real app, you'd upload the actual files
+      images: imageFiles, // Array of File objects
+      imageCount: imageFiles.length,
     };
-    
-    console.log("Product data submitted:", formData);
-    alert("Product added successfully!");
-    
+
+    console.log("Product data submitted:", {
+      ...formData,
+      // Detailed file information
+      filesInfo: imageFiles.map((file) => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified,
+      })),
+    });
+
     // Reset form
     reset();
-    setImagePreviews([]);
+    setImageFiles([]);
     setTags([]);
   };
 
@@ -90,12 +104,18 @@ const AddProduct = () => {
                   Product Name*
                 </label>
                 <input
-                  {...register("name", { required: "Product name is required" })}
+                  {...register("name", {
+                    required: "Product name is required",
+                  })}
                   className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
                 />
-                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
-
+              {/* 
               <div>
                 <label className="block text-sm font-medium text-amber-500 mb-1">
                   Brand
@@ -104,14 +124,17 @@ const AddProduct = () => {
                   {...register("brand")}
                   className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
                 />
-              </div>
+              </div> */}
 
+              {/* category section  */}
               <div>
                 <label className="block text-sm font-medium text-amber-500 mb-1">
                   Category*
                 </label>
                 <select
-                  {...register("category", { required: "Category is required" })}
+                  {...register("category", {
+                    required: "Category is required",
+                  })}
                   className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
                 >
                   <option value="">Select a category</option>
@@ -121,29 +144,125 @@ const AddProduct = () => {
                   <option value="beauty">Beauty</option>
                   <option value="sports">Sports & Outdoors</option>
                 </select>
-                {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
+                {errors.category && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.category.message}
+                  </p>
+                )}
               </div>
 
+              {/* sku field  */}
               <div>
                 <label className="block text-sm font-medium text-amber-500 mb-1">
                   SKU
                 </label>
                 <input
+                  placeholder="VB-P-OIL-12ML-2"
                   {...register("sku")}
                   className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-amber-500 mb-1">
-                  Description*
-                </label>
-                <textarea
-                  {...register("description", { required: "Description is required" })}
-                  rows="4"
-                  className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
-                ></textarea>
-                {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+              <div className="md:col-span-2 space-y-4">
+                {/* Product Title */}
+                <div>
+                  <label className="block text-sm font-medium text-amber-500 mb-1">
+                    Perfume Title*
+                  </label>
+                  <input
+                    {...register("perfumeTitle", {
+                      required: "Perfume title is required",
+                    })}
+                    type="text"
+                    placeholder="e.g., VAMPIRE BLOOD – The Ultimate Long Lasting Perfume for Men & Women"
+                    className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
+                  />
+                  {errors.perfumeTitle && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.perfumeTitle.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Fragrance Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-amber-500 mb-1">
+                    Fragrance Notes*
+                  </label>
+                  <input
+                    {...register("fragranceNotes", {
+                      required: "Fragrance notes are required",
+                    })}
+                    type="text"
+                    placeholder="e.g., Dark Berry, Sweet Vanilla, Refreshing Palm"
+                    className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
+                  />
+                  {errors.fragranceNotes && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.fragranceNotes.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Lasting Time */}
+                <div>
+                  <label className="block text-sm font-medium text-amber-500 mb-1">
+                    Lasting Time*
+                  </label>
+                  <input
+                    {...register("lastingTime", {
+                      required: "Lasting time is required",
+                    })}
+                    type="text"
+                    placeholder="e.g., 8-16 Hours"
+                    className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
+                  />
+                  {errors.lastingTime && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.lastingTime.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Smell Projection */}
+                <div>
+                  <label className="block text-sm font-medium text-amber-500 mb-1">
+                    Smell Projection*
+                  </label>
+                  <input
+                    {...register("smellProjection", {
+                      required: "Smell projection is required",
+                    })}
+                    type="text"
+                    placeholder="e.g., 1-8 Feet"
+                    className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
+                  />
+                  {errors.smellProjection && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.smellProjection.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Usage */}
+                <div>
+                  <label className="block text-sm font-medium text-amber-500 mb-1">
+                    Recommended Usage*
+                  </label>
+                  <input
+                    {...register("usage", {
+                      required: "Usage information is required",
+                    })}
+                    type="text"
+                    placeholder="e.g., Perfect for office, special occasions, and masjid"
+                    className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
+                  />
+                  {errors.usage && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.usage.message}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -164,16 +283,21 @@ const AddProduct = () => {
                   </span>
                   <input
                     type="number"
-                    {...register("price", { 
+                    placeholder="100"
+                    {...register("price", {
                       required: "Price is required",
-                      min: { value: 0, message: "Price must be positive" }
+                      min: { value: 0, message: "Price must be positive" },
                     })}
                     min="0"
                     step="0.01"
                     className="w-full pl-8 pr-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
                   />
                 </div>
-                {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price.message}</p>}
+                {errors.price && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.price.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -182,14 +306,19 @@ const AddProduct = () => {
                 </label>
                 <input
                   type="number"
-                  {...register("quantity", { 
+                  placeholder="10"
+                  {...register("quantity", {
                     required: "Quantity is required",
-                    min: { value: 0, message: "Quantity must be positive" }
+                    min: { value: 0, message: "Quantity must be positive" },
                   })}
                   min="0"
                   className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-zinc-800 text-white"
                 />
-                {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity.message}</p>}
+                {errors.quantity && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.quantity.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -216,13 +345,37 @@ const AddProduct = () => {
             </h2>
             <div className="space-y-4">
               <div className="flex flex-wrap gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index}`}
-                      className="w-24 h-24 object-cover rounded-md"
-                    />
+                {imageFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="relative bg-zinc-800 p-3 rounded-md border border-zinc-700"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-zinc-700 p-2 rounded">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-8 w-8 text-amber-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                      </div>
+                      <div className="max-w-xs">
+                        <p className="text-sm font-medium text-amber-500 truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-zinc-400">
+                          {(file.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    </div>
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
@@ -323,7 +476,7 @@ const AddProduct = () => {
               type="button"
               onClick={() => {
                 reset();
-                setImagePreviews([]);
+                setImageFiles([]);
                 setTags([]);
               }}
               className="px-4 py-2 border border-zinc-700 rounded-md text-sm font-medium text-amber-500 bg-zinc-800 hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"

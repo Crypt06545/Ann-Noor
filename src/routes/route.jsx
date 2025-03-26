@@ -7,6 +7,9 @@ import ProDemo from "../pages/ProDemo";
 import DashLayout from "../layouts/DashLayout";
 import AddProduct from "../pages/Dashboard/AddProduct";
 import Statics from "../pages/Dashboard/Statics";
+import ManageProducts from "../pages/Dashboard/ManageProducts";
+import Orders from "../pages/Dashboard/Orders";
+import Users from "../pages/Dashboard/Users";
 
 const router = createBrowserRouter([
   {
@@ -30,12 +33,22 @@ const router = createBrowserRouter([
     element: <DashLayout />,
     children: [
       {
+        path: "manage-products",
+        element: <ManageProducts />,
+      },
+      {
         path: "add-product",
         element: <AddProduct />,
       },
       {
         path: "statistics",
         element: <Statics />,
+      },{
+        path: "orders",
+        element: <Orders />,
+      },{
+        path: "users",
+        element: <Users />,
       },
     ],
   },
