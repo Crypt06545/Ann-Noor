@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ORD-1001",
+    "customer": "John Doe",
+    "product": "Wireless Headphones",
+    "price": 59.99,
+    "quantity": 1,
+    "date": "2023-05-15",
+    "status": "delivered",
+    "payment": "Credit Card"
+  },
+  {
+    "id": "ORD-1002",
+    "customer": "Jane Smith",
+    "product": "Smart Watch",
+    "price": 129.99,
+    "quantity": 1,
+    "date": "2023-05-16",
+    "status": "shipped",
+    "payment": "PayPal"
+  },
+  {
+    "id": "ORD-1003",
+    "customer": "Mike Johnson",
+    "product": "Bluetooth Speaker",
+    "price": 45.5,
+    "quantity": 2,
+    "date": "2023-05-17",
+    "status": "pending",
+    "payment": "Cash on Delivery"
+  },
+  {
+    "id": "ORD-1004",
+    "customer": "Sarah Williams",
+    "product": "Phone Case",
+    "price": 15.99,
+    "quantity": 3,
+    "date": "2023-05-18",
+    "status": "delivered",
+    "payment": "Credit Card"
+  },
+  {
+    "id": "ORD-1005",
+    "customer": "David Brown",
+    "product": "Laptop Stand",
+    "price": 29.99,
+    "quantity": 1,
+    "date": "2023-05-19",
+    "status": "cancelled",
+    "payment": "PayPal"
+  },
+  {
+    "id": "ORD-1006",
+    "customer": "David Brown",
+    "product": "Laptop Stand",
+    "price": 29.99,
+    "quantity": 1,
+    "date": "2023-05-19",
+    "status": "cancelled",
+    "payment": "PayPal"
+  },
+  {
+    "id": "ORD-1007",
+    "customer": "David Brown",
+    "product": "Laptop Stand",
+    "price": 29.99,
+    "quantity": 1,
+    "date": "2023-05-19",
+    "status": "cancelled",
+    "payment": "PayPal"
+  },
+  {
+    "id": "ORD-1008",
+    "customer": "David Brown",
+    "product": "Laptop Stand",
+    "price": 29.99,
+    "quantity": 1,
+    "date": "2023-05-19",
+    "status": "cancelled",
+    "payment": "PayPal"
+  }
+]
