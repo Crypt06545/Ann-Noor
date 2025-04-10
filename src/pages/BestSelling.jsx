@@ -1,12 +1,24 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchBestSellingProducts } from "../api/Api";
+import toast from 'react-hot-toast'
 
 const BestSelling = () => {
+  // get products
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["products"],
     queryFn: fetchBestSellingProducts,
   });
+
+  // handle add to cart
+  const handleAddToCard = (id) => {
+    toast.success('product added')
+    console.log(id);
+  };
+  // handle add to cart
+  const handleBuyNow = (id) => {
+    console.log(id);
+  };
 
   if (isLoading) {
     return (
@@ -58,10 +70,20 @@ const BestSelling = () => {
 
                 {/* Action Buttons - Always visible on mobile, shows on hover for desktop */}
                 <div className="lg:absolute lg:bottom-0 lg:left-0 lg:right-0 p-4 bg-gray-700 lg:opacity-0 lg:group-hover:opacity-100 lg:translate-y-4 lg:group-hover:translate-y-0 transition-all duration-300 flex flex-col gap-2">
-                  <button className="w-full bg-amber-500 text-white py-2 px-4 rounded font-medium hover:bg-amber-600 transition-colors duration-200">
+                  <button
+                    onClick={() => {
+                      handleAddToCard(id);
+                    }}
+                    className="w-full cursor-pointer bg-amber-500 text-white py-2 px-4 rounded font-medium hover:bg-amber-600 transition-colors duration-200"
+                  >
                     Add to Cart
                   </button>
-                  <button className="w-full bg-white text-gray-800 py-2 px-4 rounded font-medium hover:bg-gray-100 transition-colors duration-200">
+                  <button
+                    onClick={() => {
+                      handleBuyNow(id);
+                    }}
+                    className="w-full cursor-pointer bg-white text-gray-800 py-2 px-4 rounded font-medium hover:bg-gray-300 transition-colors duration-200"
+                  >
                     Buy Now
                   </button>
                 </div>
