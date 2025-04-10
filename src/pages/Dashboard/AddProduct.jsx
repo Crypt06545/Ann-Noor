@@ -391,7 +391,7 @@ const AddProduct = () => {
                   Upload Images
                 </label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-zinc-700 border-dashed rounded-md">
-                  <div className="space-y-1 text-center">
+                  <div className="space-y-1 text-center ">
                     <svg
                       className="mx-auto h-12 w-12 text-amber-500"
                       stroke="currentColor"
@@ -411,7 +411,9 @@ const AddProduct = () => {
                         htmlFor="file-upload"
                         className="relative cursor-pointer rounded-md font-medium hover:text-amber-600 focus-within:outline-none"
                       >
-                        <span>Upload files</span>
+                        <span className="text-gray-200 px-[10px] py-[4px] active:scale-75 rounded-xl bg-amber-400">
+                          Upload files
+                        </span>
                         <input
                           id="file-upload"
                           type="file"

@@ -10,6 +10,9 @@ import Statics from "../pages/Dashboard/Statics";
 import ManageProducts from "../pages/Dashboard/ManageProducts";
 import Orders from "../pages/Dashboard/Orders";
 import Users from "../pages/Dashboard/Users";
+import OrderInfo from "../pages/OrderInfo";
+
+
 
 const router = createBrowserRouter([
   {
@@ -23,8 +26,13 @@ const router = createBrowserRouter([
       },
       {
         path: "/products",
-        // element: <ProductPage />,
-        element: <ProDemo />,
+        element: <ProductPage />,
+        // element: <ProDemo />,
+      },
+      {
+        path: "/order-info",
+        element: <OrderInfo />,
+        // element: <ProDemo />,
       },
     ],
   },
@@ -43,10 +51,12 @@ const router = createBrowserRouter([
       {
         path: "statistics",
         element: <Statics />,
-      },{
+      },
+      {
         path: "orders",
         element: <Orders />,
-      },{
+      },
+      {
         path: "users",
         element: <Users />,
       },
