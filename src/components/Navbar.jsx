@@ -1,7 +1,13 @@
 import { useGSAP } from "@gsap/react";
 import React, { useState, useEffect, useRef } from "react";
-import { FiHeart, FiShoppingBag, FiUser, FiLogOut, FiPackage } from "react-icons/fi";
-import { NavLink } from "react-router-dom";
+import {
+  FiHeart,
+  FiShoppingBag,
+  FiUser,
+  FiLogOut,
+  FiPackage,
+} from "react-icons/fi";
+import { NavLink, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
@@ -17,11 +23,11 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, setUser } = useAppContext(); // Authentication state
+  const { user, setUser, setShowUserLogin, showUserLogin } = useAppContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(1); // Cart items count
   const dropdownRef = useRef(null);
-
+  const navigate = useNavigate();
   const toggleNav = () => {
     setIsOpen(!isOpen);
   };
@@ -29,6 +35,7 @@ const Navbar = () => {
   const handleLogout = () => {
     setUser(false);
     setShowDropdown(false);
+    navigate("/");
   };
 
   // Close dropdown when clicking outside
@@ -134,15 +141,21 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <NavLink
-              to="/login"
-              className="px-5 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition-all duration-300 font-medium"
+            <button
+              onClick={() => {
+                setShowUserLogin(true);
+              }}
             >
-              Login
-            </NavLink>
+              <NavLink
+                to="/login"
+                className="px-5 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition-all duration-300 font-medium"
+              >
+                Login
+              </NavLink>
+            </button>
           )}
 
-          <button className="relative">
+          <button className="relative" >
             <FiShoppingBag className="hover:text-amber-600 cursor-pointer" />
             <span className="absolute -top-2 -right-2 bg-amber-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
               {cartItemsCount}
@@ -155,10 +168,9 @@ const Navbar = () => {
           {isOpen ? <AiOutlineClose /> : <FaBars />}
         </button>
 
-
         {/* Mobile Nav */}
         {isOpen && (
-          <div className="md:hidden fixed bg-zinc-800/95 backdrop-blur-sm p-6 top-16 left-0 w-full h-[calc(100vh-4rem)] shadow-xl border-t border-zinc-700 overflow-y-auto">
+          <div className="mobile-nav md:hidden fixed bg-zinc-800/95 backdrop-blur-sm p-6 top-16 left-0 w-full h-[calc(100vh-4rem)] shadow-xl border-t border-zinc-700 overflow-y-auto">
             <div className="flex flex-col h-full">
               {/* Navigation Links */}
               <ul className="space-y-6 py-4 border-b border-zinc-700">
@@ -222,13 +234,19 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <NavLink
-                      to="/login"
-                      className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
-                      onClick={() => setIsOpen(false)}
+                    <button
+                      onClick={() => {
+                        setShowUserLogin(true);
+                      }}
                     >
-                      Login
-                    </NavLink>
+                      <NavLink
+                        to="/login"
+                        className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Login
+                      </NavLink>
+                    </button>
                     <NavLink
                       to="/register"
                       className="block w-full py-3 px-6 text-center border border-zinc-600 hover:border-zinc-400 text-white font-medium rounded-lg transition-colors duration-200"

@@ -69,7 +69,7 @@ const Footer = () => {
 
         {/* Footer Bottom */}
         <div className="mt-10 border-t border-gray-700 pt-4 text-center text-sm">
-          © 2025 Local Ann Noor. All rights reserved.
+          © {new Date().getFullYear()} Local Ann Noor. All rights reserved.
         </div>
       </div>
     </footer>

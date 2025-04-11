@@ -11,8 +11,8 @@ import ManageProducts from "../pages/Dashboard/ManageProducts";
 import Orders from "../pages/Dashboard/Orders";
 import Users from "../pages/Dashboard/Users";
 import OrderInfo from "../pages/OrderInfo";
-
-
+import SignIn from "../pages/SignIn";
+import SignUp from "../pages/SignUp";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +32,16 @@ const router = createBrowserRouter([
       {
         path: "/order-info",
         element: <OrderInfo />,
+        // element: <ProDemo />,
+      },
+      {
+        path: "/logIn",
+        element: <SignIn />,
+        // element: <ProDemo />,
+      },
+      {
+        path: "/signUp",
+        element: <SignUp />,
         // element: <ProDemo />,
       },
     ],
