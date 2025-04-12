@@ -42,7 +42,6 @@ const Hero = () => {
     );
   }, []);
 
-  
   return (
     <div className="relative bg-zinc-900 text-white min-h-screen w-11/12 mx-auto">
       {/* Background Blur Effects */}

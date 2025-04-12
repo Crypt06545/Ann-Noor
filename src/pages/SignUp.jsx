@@ -1,21 +1,26 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, Loader } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useForm } from "react-hook-form";
+import useUserStore from "../stores/useUserStore";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { signUp, user } = useUserStore();
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm();
+
   // gsap animation
   useGSAP(() => {
     const tl = gsap.timeline();
@@ -35,10 +40,16 @@ const SignUp = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const onSubmit = (data) => {
-    console.log(data);
-    reset();
+  const onSubmit = async (data) => {
+    const success = await signUp(data);
+    console.log(success);
+    
+    if (success) {
+      reset();
+      navigate("/login");
+    }
   };
+
   return (
     <div className="bg-zinc-900 min-h-screen flex items-center justify-center p-4">
       <div className="form-sinup w-full max-w-md p-8 space-y-6 rounded-xl bg-neutral-800 text-gray-200">
@@ -107,7 +118,7 @@ const SignUp = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 id="confirmPassword"
-                {...register("confirmpassword", { required: true })}
+                {...register("confirmPassword", { required: true })}
                 placeholder="Confirm Password"
                 className="w-full px-4 py-3 rounded-md border border-gray-600 bg-zinc-700 text-gray-200 focus:border-[#AB572D] focus:outline-none pr-10"
                 disabled={loading}
