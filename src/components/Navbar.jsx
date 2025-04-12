@@ -11,7 +11,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
-import { useAppContext } from "../context/AppContext";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -23,7 +22,7 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, setUser, setShowUserLogin, showUserLogin } = useAppContext();
+  const { user, setUser } = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(1); // Cart items count
   const dropdownRef = useRef(null);
@@ -141,11 +140,7 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <button
-              onClick={() => {
-                setShowUserLogin(true);
-              }}
-            >
+            <button>
               <NavLink
                 to="/login"
                 className="px-5 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition-all duration-300 font-medium"
@@ -155,7 +150,7 @@ const Navbar = () => {
             </button>
           )}
 
-          <button className="relative" >
+          <button className="relative">
             <FiShoppingBag className="hover:text-amber-600 cursor-pointer" />
             <span className="absolute -top-2 -right-2 bg-amber-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
               {cartItemsCount}
@@ -234,11 +229,7 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <button
-                      onClick={() => {
-                        setShowUserLogin(true);
-                      }}
-                    >
+                    <button>
                       <NavLink
                         to="/login"
                         className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
@@ -261,7 +252,7 @@ const Navbar = () => {
               {/* Cart Section */}
               <div className="py-6">
                 <NavLink
-                  to="/cart"
+                  to={"/cart"}
                   className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-zinc-700/50"
                   onClick={() => setIsOpen(false)}
                 >
