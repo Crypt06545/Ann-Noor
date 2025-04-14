@@ -10,8 +10,7 @@ import useUserStore from "../stores/useUserStore";
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { signUp, user } = useUserStore();
+  const { signUp, loading } = useUserStore();
   const navigate = useNavigate();
 
   const {
@@ -42,8 +41,8 @@ const SignUp = () => {
 
   const onSubmit = async (data) => {
     const success = await signUp(data);
-    console.log(success);
-    
+    // console.log(success);
+
     if (success) {
       reset();
       navigate("/login");
@@ -66,10 +65,15 @@ const SignUp = () => {
               name="username"
               id="username"
               placeholder="Username"
-              {...register("username", { required: true })}
+              {...register("username", { required: "Username is required" })}
               className="w-full px-4 py-3 rounded-md border border-gray-600 bg-zinc-700 text-gray-200 focus:border-[#AB572D] focus:outline-none"
               disabled={loading}
             />
+            {errors.username && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.username.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <label htmlFor="email" className="block text-gray-300">
@@ -95,7 +99,19 @@ const SignUp = () => {
                 name="password"
                 id="password"
                 placeholder="Password"
-                {...register("password", { required: true })}
+                {...register("password", {
+                  required: true,
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                  pattern: {
+                    value:
+                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
+                    message:
+                      "Password must contain at least one uppercase, one lowercase, and one special character",
+                  },
+                })}
                 className="w-full px-4 py-3 rounded-md border border-gray-600 bg-zinc-700 text-gray-200 focus:border-[#AB572D] focus:outline-none pr-10"
                 disabled={loading}
               />
@@ -108,6 +124,17 @@ const SignUp = () => {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
+            {errors.password && (
+              <p
+                style={{
+                  color: "red",
+                  fontSize: "0.875rem",
+                  marginTop: "0.25rem",
+                }}
+              >
+                {errors.password.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <label htmlFor="confirmPassword" className="block text-gray-300">

@@ -5,6 +5,7 @@ import { LogIn, Loader } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useForm } from "react-hook-form";
+import useUserStore from "../stores/useUserStore";
 
 const SignIn = () => {
   const {
@@ -14,7 +15,7 @@ const SignIn = () => {
     formState: { errors },
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { signIn, loading } = useUserStore();
 
   // gsap animation
   useGSAP(() => {
@@ -33,6 +34,7 @@ const SignIn = () => {
 
   const onSubmit = (data) => {
     console.log(data);
+    signIn(data);
     reset();
   };
 
@@ -47,21 +49,23 @@ const SignIn = () => {
           className="space-y-6"
         >
           <div className="space-y-2">
-            <label htmlFor="username" className="block text-gray-300">
-              Username
+            <label htmlFor="Email" className="block text-gray-300">
+              Email
             </label>
             <input
               type="text"
-              name="username"
-              id="username"
-              {...register("username", { required: "Username is required" })}
-              placeholder="Username"
+              name="Email"
+              id="Email"
+              {...register("email", {
+                required: "Email is required",
+              })}
+              placeholder="Email"
               className="w-full px-4 py-3 rounded-md border border-gray-600 bg-zinc-700 text-gray-200 focus:border-[#AB572D] focus:outline-none"
               disabled={loading}
             />
-            {errors.username && (
+            {errors.email && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.username.message}
+                {errors.email.message}
               </p>
             )}
           </div>

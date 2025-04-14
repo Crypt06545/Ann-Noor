@@ -1,18 +1,22 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
+import DashLayout from "../layouts/DashLayout";
 import Errorpage from "../pages/Errorpage";
 import Home from "../pages/Home";
 import ProductPage from "../pages/ProductDetails";
-import ProDemo from "../pages/ProDemo";
-import DashLayout from "../layouts/DashLayout";
+import OrderInfo from "../pages/OrderInfo";
+import SignIn from "../pages/SignIn";
+import SignUp from "../pages/SignUp";
 import AddProduct from "../pages/Dashboard/AddProduct";
 import Statics from "../pages/Dashboard/Statics";
 import ManageProducts from "../pages/Dashboard/ManageProducts";
 import Orders from "../pages/Dashboard/Orders";
 import Users from "../pages/Dashboard/Users";
-import OrderInfo from "../pages/OrderInfo";
-import SignIn from "../pages/SignIn";
-import SignUp from "../pages/SignUp";
+
+// Route protection
+import PublicRoute from "./PublicRoute";
+// Optional: import PrivateRoute if you want to protect dashboard
+// import PrivateRoute from "../components/PrivateRoute";
 
 const router = createBrowserRouter([
   {
@@ -27,27 +31,37 @@ const router = createBrowserRouter([
       {
         path: "/products",
         element: <ProductPage />,
-        // element: <ProDemo />,
       },
       {
         path: "/order-info",
         element: <OrderInfo />,
-        // element: <ProDemo />,
       },
       {
         path: "/login",
-        element: <SignIn />,
-        // element: <ProDemo />,
+        element: (
+          <PublicRoute>
+            <SignIn />
+          </PublicRoute>
+        ),
       },
       {
         path: "/signup",
-        element: <SignUp />,
-        // element: <ProDemo />,
+        element: (
+          <PublicRoute>
+            <SignUp />
+          </PublicRoute>
+        ),
       },
     ],
   },
   {
-    path: "dashboard",
+    path: "/dashboard",
+    // Optional: protect this using PrivateRoute if needed
+    // element: (
+    //   <PrivateRoute>
+    //     <DashLayout />
+    //   </PrivateRoute>
+    // ),
     element: <DashLayout />,
     children: [
       {
