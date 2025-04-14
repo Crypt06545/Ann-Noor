@@ -51,6 +51,17 @@ const useUserStore = create((set) => ({
     }
   },
 
+  logOut: async () => {
+    try {
+      await axiosInstance.post("/users/logout");
+      set({ user: null });
+      toast.success("Successfully logout!!");
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.log(error);
+    }
+  },
+  
   checkAuth: async () => {
     set({ checkingAuth: true });
     try {
@@ -58,7 +69,8 @@ const useUserStore = create((set) => ({
       set({ user: response.data, checkingAuth: false });
     } catch (error) {
       set({ checkingAuth: false, user: null });
-      console.log(error);
+      toast.error(`${error.response.data.message}, please login`);
+      // console.log(error);
     }
   },
 }));

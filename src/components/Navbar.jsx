@@ -11,6 +11,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
+import useUserStore from "../stores/useUserStore";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -22,7 +23,8 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, setUser } = useState(false);
+  // const { user, setUser } = useState(false);
+  const { user, logOut } = useUserStore();
   const [showDropdown, setShowDropdown] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(1); // Cart items count
   const dropdownRef = useRef(null);
@@ -32,9 +34,9 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    setUser(false);
+    logOut()
     setShowDropdown(false);
-    navigate("/");
+    navigate("/login");
   };
 
   // Close dropdown when clicking outside
