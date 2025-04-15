@@ -5,7 +5,6 @@ import { LogIn, Loader } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useForm } from "react-hook-form";
-import useUserStore from "../stores/useUserStore";
 
 const SignIn = () => {
   const {
@@ -15,7 +14,7 @@ const SignIn = () => {
     formState: { errors },
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, loading } = useUserStore();
+  const { loading, setLoading } = useState(false);
 
   // gsap animation
   useGSAP(() => {
@@ -34,7 +33,6 @@ const SignIn = () => {
 
   const onSubmit = (data) => {
     console.log(data);
-    signIn(data);
     reset();
   };
 

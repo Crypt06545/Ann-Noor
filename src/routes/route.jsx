@@ -1,92 +1,40 @@
-import { createBrowserRouter } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+
+// Layouts
 import MainLayout from "../layouts/MainLayout";
 import DashLayout from "../layouts/DashLayout";
-import Errorpage from "../pages/Errorpage";
+
+// Pages
 import Home from "../pages/Home";
+import Errorpage from "../pages/Errorpage";
 import ProductPage from "../pages/ProductDetails";
 import OrderInfo from "../pages/OrderInfo";
 import SignIn from "../pages/SignIn";
 import SignUp from "../pages/SignUp";
-import AddProduct from "../pages/Dashboard/AddProduct";
+import { useAppContext } from "../context/AppContext";
+
+// Dashboard pages
+import DAddProduct from "../pages/Dashboard/DAddProduct";
 import Statics from "../pages/Dashboard/Statics";
 import ManageProducts from "../pages/Dashboard/ManageProducts";
 import Orders from "../pages/Dashboard/Orders";
 import Users from "../pages/Dashboard/Users";
+import Navbar from "../components/Navbar";
 
-// Route protection
-import PublicRoute from "./PublicRoute";
-import PrivateRoute from "./PrivateRoute";
-// Optional: import PrivateRoute if you want to protect dashboard
-// import PrivateRoute from "../components/PrivateRoute";
+export default function AppRoutes() {
+  const { user } = useAppContext();
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <MainLayout />,
-    errorElement: <Errorpage />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-      },
-      {
-        path: "/products",
-        element: <ProductPage />,
-      },
-      {
-        path: "/order-info",
-        element: <OrderInfo />,
-      },
-      {
-        path: "/login",
-        element: (
-          <PublicRoute>
-            <SignIn />
-          </PublicRoute>
-        ),
-      },
-      {
-        path: "/signup",
-        element: (
-          <PublicRoute>
-            <SignUp />
-          </PublicRoute>
-        ),
-      },
-    ],
-  },
-  {
-    path: "/dashboard",
-    // Optional: protect this using PrivateRoute if needed
-    element: (
-      <PrivateRoute>
-        <DashLayout />
-      </PrivateRoute>
-    ),
-    // element: <DashLayout />,
-    children: [
-      {
-        path: "manage-products",
-        element: <ManageProducts />,
-      },
-      {
-        path: "add-product",
-        element: <AddProduct />,
-      },
-      {
-        path: "statistics",
-        element: <Statics />,
-      },
-      {
-        path: "orders",
-        element: <Orders />,
-      },
-      {
-        path: "users",
-        element: <Users />,
-      },
-    ],
-  },
-]);
+  const isAdminPath = useLocation().pathname.includes('admin')
 
-export default router;
+  return (
+    <div>
+      {isAdminPath ? null : <Navbar/>}
+      <div>
+        <Routes>
+          <Route path="/" element={<Home/>}/>
+
+        </Routes>
+      </div>
+    </div>
+  );
+}

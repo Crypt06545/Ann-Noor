@@ -1,18 +1,23 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { RouterProvider } from "react-router-dom";
-import router from "./routes/route.jsx";
+import AppRoutes from "./routes/route";
+import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { AppContextProvider } from "./context/AppContext";
 
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <Toaster position="top-right" reverseOrder={false} />
+      <AppContextProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <Toaster position="top-right" reverseOrder={false} />
+        </BrowserRouter>
+      </AppContextProvider>
     </QueryClientProvider>
   </StrictMode>
 );

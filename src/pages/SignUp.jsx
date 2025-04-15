@@ -5,12 +5,12 @@ import { UserPlus, Loader } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useForm } from "react-hook-form";
-import useUserStore from "../stores/useUserStore";
+import { useAppContext } from "../context/AppContext";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { signUp, loading } = useUserStore();
+  const { user, loading } = useAppContext();
   const navigate = useNavigate();
 
   const {
@@ -40,13 +40,7 @@ const SignUp = () => {
   };
 
   const onSubmit = async (data) => {
-    const success = await signUp(data);
-    // console.log(success);
-
-    if (success) {
-      reset();
-      navigate("/login");
-    }
+    console.log(data);
   };
 
   return (
