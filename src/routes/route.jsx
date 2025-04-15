@@ -15,6 +15,7 @@ import Users from "../pages/Dashboard/Users";
 
 // Route protection
 import PublicRoute from "./PublicRoute";
+import PrivateRoute from "./PrivateRoute";
 // Optional: import PrivateRoute if you want to protect dashboard
 // import PrivateRoute from "../components/PrivateRoute";
 
@@ -57,12 +58,12 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     // Optional: protect this using PrivateRoute if needed
-    // element: (
-    //   <PrivateRoute>
-    //     <DashLayout />
-    //   </PrivateRoute>
-    // ),
-    element: <DashLayout />,
+    element: (
+      <PrivateRoute>
+        <DashLayout />
+      </PrivateRoute>
+    ),
+    // element: <DashLayout />,
     children: [
       {
         path: "manage-products",

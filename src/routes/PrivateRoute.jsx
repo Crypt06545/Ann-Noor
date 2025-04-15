@@ -1,8 +1,8 @@
-// components/PublicRoute.jsx
+// src/components/PrivateRoute.jsx
 import { Navigate } from "react-router-dom";
 import useUserStore from "../stores/useUserStore";
 
-const PublicRoute = ({ children }) => {
+const PrivateRoute = ({ children }) => {
   const user = useUserStore((state) => state.user);
   const checkingAuth = useUserStore((state) => state.checkingAuth);
 
@@ -14,11 +14,11 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  if (user) {
-    return <Navigate to="/" replace />;
+  if (!user || user?.role !== "admin") {
+    return <Navigate to="/login" replace />;
   }
 
   return children;
 };
 
-export default PublicRoute;
+export default PrivateRoute;

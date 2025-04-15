@@ -6,6 +6,7 @@ import {
   FiUser,
   FiLogOut,
   FiPackage,
+  FiHome,
 } from "react-icons/fi";
 import { NavLink, useNavigate } from "react-router-dom";
 import gsap from "gsap";
@@ -13,33 +14,35 @@ import { FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
 import useUserStore from "../stores/useUserStore";
 
-const navLinks = [
-  { name: "Home", path: "/" },
-  { name: "Shop", path: "/shop" },
-  { name: "About Us", path: "/about-us" },
-  { name: "Dashboard", path: "/dashboard" },
-  { name: "Products", path: "/products" },
-];
-
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // const { user, setUser } = useState(false);
   const { user, logOut } = useUserStore();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [cartItemsCount, setCartItemsCount] = useState(1); // Cart items count
+  const [cartItemsCount, setCartItemsCount] = useState(1);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Shop", path: "/shop" },
+    { name: "About Us", path: "/about-us" },
+    { name: "Products", path: "/products" },
+  ];
+
+  if (user?.role === "admin") {
+    navLinks.push({ name: "Dashboard", path: "/dashboard" });
+  }
+
   const toggleNav = () => {
     setIsOpen(!isOpen);
   };
 
   const handleLogout = () => {
-    logOut()
+    logOut();
     setShowDropdown(false);
     navigate("/login");
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -53,7 +56,6 @@ const Navbar = () => {
     };
   }, []);
 
-  // GSAP animations
   useGSAP(() => {
     const tl = gsap.timeline();
     tl.from(".logo, .mobile-icon, .nav-link , .dev-icons", {
@@ -79,10 +81,7 @@ const Navbar = () => {
   return (
     <nav className="bg-zinc-950 text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-11/12 mx-auto flex justify-between items-center p-4">
-        {/* Logo */}
-        <h1 className="logo font-robotoSlab text-2xl font-extrabold">
-          Ann Noor
-        </h1>
+        <h1 className="logo font-robotoSlab text-2xl font-extrabold">Ann Noor</h1>
 
         {/* Desktop Nav */}
         <ul className="md:flex items-center hidden gap-10">
@@ -119,12 +118,31 @@ const Navbar = () => {
                 />
               </div>
 
-              {/* Dropdown that appears on hover */}
+              {/* Dropdown */}
               <div
-                className={`absolute right-0 mt-2 w-32 bg-zinc-800 rounded-md shadow-lg py-1 z-50 transition-all duration-300 ${
+                className={`absolute right-0 mt-2 w-40 bg-zinc-800 rounded-md shadow-lg py-2 z-50 transition-all duration-300 ${
                   showDropdown ? "opacity-100 visible" : "opacity-0 invisible"
                 }`}
               >
+                {user.role === "admin" ? (
+                  <NavLink
+                    to="/dashboard"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center px-4 py-2 text-sm text-white hover:bg-zinc-700 w-full text-left"
+                  >
+                    <FiHome className="mr-2" />
+                    Dashboard
+                  </NavLink>
+                ) : (
+                  <NavLink
+                    to="/my-orders"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center px-4 py-2 text-sm text-white hover:bg-zinc-700 w-full text-left"
+                  >
+                    <FiPackage className="mr-2" />
+                    My Orders
+                  </NavLink>
+                )}
                 <button
                   onClick={handleLogout}
                   className="flex items-center px-4 py-2 text-sm text-white hover:bg-zinc-700 w-full text-left"
@@ -132,24 +150,15 @@ const Navbar = () => {
                   <FiLogOut className="mr-2" />
                   Logout
                 </button>
-                <NavLink
-                  to="/my-orders"
-                  onClick={() => setShowDropdown(false)}
-                  className="block px-4 py-2 text-sm text-white hover:bg-zinc-700"
-                >
-                  My Orders
-                </NavLink>
               </div>
             </div>
           ) : (
-            <button>
-              <NavLink
-                to="/login"
-                className="px-5 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition-all duration-300 font-medium"
-              >
-                Login
-              </NavLink>
-            </button>
+            <NavLink
+              to="/login"
+              className="px-5 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition-all duration-300 font-medium"
+            >
+              Login
+            </NavLink>
           )}
 
           <button className="relative">
@@ -169,7 +178,6 @@ const Navbar = () => {
         {isOpen && (
           <div className="mobile-nav md:hidden fixed bg-zinc-800/95 backdrop-blur-sm p-6 top-16 left-0 w-full h-[calc(100vh-4rem)] shadow-xl border-t border-zinc-700 overflow-y-auto">
             <div className="flex flex-col h-full">
-              {/* Navigation Links */}
               <ul className="space-y-6 py-4 border-b border-zinc-700">
                 {navLinks.map((link) => (
                   <li key={link.name}>
@@ -206,20 +214,37 @@ const Navbar = () => {
                       </div>
                     </div>
 
-                    <NavLink
-                      to="/my-orders"
-                      className={({ isActive }) =>
-                        `flex items-center py-3 px-4 rounded-lg text-lg ${
-                          isActive
-                            ? "bg-amber-600/10 text-amber-500"
-                            : "text-zinc-200 hover:bg-zinc-700/50"
-                        }`
-                      }
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FiPackage className="mr-3" />
-                      My Orders
-                    </NavLink>
+                    {user.role === "admin" ? (
+                      <NavLink
+                        to="/dashboard"
+                        className={({ isActive }) =>
+                          `flex items-center py-3 px-4 rounded-lg text-lg ${
+                            isActive
+                              ? "bg-amber-600/10 text-amber-500"
+                              : "text-zinc-200 hover:bg-zinc-700/50"
+                          }`
+                        }
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <FiHome className="mr-3" />
+                        Dashboard
+                      </NavLink>
+                    ) : (
+                      <NavLink
+                        to="/my-orders"
+                        className={({ isActive }) =>
+                          `flex items-center py-3 px-4 rounded-lg text-lg ${
+                            isActive
+                              ? "bg-amber-600/10 text-amber-500"
+                              : "text-zinc-200 hover:bg-zinc-700/50"
+                          }`
+                        }
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <FiPackage className="mr-3" />
+                        My Orders
+                      </NavLink>
+                    )}
 
                     <button
                       onClick={handleLogout}
@@ -231,15 +256,13 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <button>
-                      <NavLink
-                        to="/login"
-                        className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Login
-                      </NavLink>
-                    </button>
+                    <NavLink
+                      to="/login"
+                      className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Login
+                    </NavLink>
                     <NavLink
                       to="/register"
                       className="block w-full py-3 px-6 text-center border border-zinc-600 hover:border-zinc-400 text-white font-medium rounded-lg transition-colors duration-200"

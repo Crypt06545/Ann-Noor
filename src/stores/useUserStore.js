@@ -2,7 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
 
-const useUserStore = create((set) => ({
+const useUserStore = create((set, get) => ({
   user: null,
   loading: false,
   checkingAuth: true,
@@ -28,7 +28,9 @@ const useUserStore = create((set) => ({
       return true;
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response.data.message || "Something went wrong!!");
+      toast.error(
+        error.response.data.message || "Something went wrong while SingUp!!"
+      );
       return false;
     }
   },
@@ -46,7 +48,9 @@ const useUserStore = create((set) => ({
       return true;
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response.data.message || "Something went wrong!!");
+      toast.error(
+        error.response.data.message || "Something went wrong while signIn!!"
+      );
       return false;
     }
   },
@@ -57,11 +61,14 @@ const useUserStore = create((set) => ({
       set({ user: null });
       toast.success("Successfully logout!!");
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(
+        error.response.data.message,
+        "Something went wrong while logout!!"
+      );
       console.log(error);
     }
   },
-  
+
   checkAuth: async () => {
     set({ checkingAuth: true });
     try {
@@ -73,6 +80,22 @@ const useUserStore = create((set) => ({
       // console.log(error);
     }
   },
+
+  // refreshToken: async () => {
+  //   // Prevent multiple simultaneous refresh attempts
+  //   if (get().checkingAuth) return;
+
+  //   set({ checkingAuth: true });
+  //   try {
+  //     const response = await axiosInstance.post("/users/refresh-token");
+  //     set({ checkingAuth: false });
+  //     return response.data;
+  //   } catch (error) {
+  //     set({ user: null, checkingAuth: false });
+  //     throw error;
+  //   }
+  // },
+
 }));
 
 export default useUserStore;
