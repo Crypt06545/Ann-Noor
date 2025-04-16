@@ -43,6 +43,27 @@ export const AppContextProvider = ({ children }) => {
     setCartItems(cartData);
   };
 
+  // total item count
+  const cartCount = () => {
+    let totalCount = 0;
+    for (const item in cartItems) {
+      totalCount += cartItems[item];
+    }
+    return totalCount;
+  };
+
+  // total cart amount
+  const cartAmount = () => {
+    let totalAmount = 0;
+    for (const itemId in cartItems) {
+      const itemInfo = products.find((product) => product.id === itemId);
+      if (itemInfo && cartItems[itemId] > 0) {
+        totalAmount += itemInfo.offerPrice * cartItems[itemId];
+      }
+    }
+    return Math.floor(totalAmount * 100) / 100;
+  };
+
   const value = {
     user,
     setUser,
@@ -57,6 +78,8 @@ export const AppContextProvider = ({ children }) => {
     updateCartItem,
     removeFromCart,
     cartItems,
+    cartCount,
+    cartAmount,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
