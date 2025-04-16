@@ -16,6 +16,14 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { loading, setLoading } = useState(false);
 
+
+  // const [state, setState] = React.useState("login");
+  //   const [name, setName] = React.useState("");
+  //   const [email, setEmail] = React.useState("");
+  //   const [password, setPassword] = React.useState("");
+
+
+
   // gsap animation
   useGSAP(() => {
     const tl = gsap.timeline();

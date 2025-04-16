@@ -1,113 +1,143 @@
-import React, { useState } from "react";
-import ator from "../assets/images/ator.png";
-import atorR from "../assets/images/atorsec.png";
-
-import SwiperSlider from "../components/SwipperSlide";
-import { FaMinus, FaPlus } from "react-icons/fa";
-// import Breadcrumbs from "../components/Breadcrumbs";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react"; // Changed to useEffect
+import { FaStar, FaRegStar, FaShoppingCart, FaBolt, FaSpinner } from "react-icons/fa";
+import { useParams } from "react-router-dom";
+import { getProductDetails } from "../api/Api";
 
 const ProductDetails = () => {
-  const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("100ml"); // State for selected size
-  const images = [ator, atorR];
+  const { id } = useParams();
+  
+  // Fetch product details
+  const { data: product, isLoading, isError, error } = useQuery({
+    queryKey: ["product", id],
+    queryFn: () => getProductDetails(id),
+  });
 
-  // Size options with their corresponding images and labels
-  const sizeOptions = [
-    { size: "100ml", image: ator },
-    { size: "150ml", image: atorR },
-  ];
+  const [thumbnail, setThumbnail] = useState("");
+
+  // Use useEffect to set thumbnail when product data loads
+  useEffect(() => {
+    if (product?.image) {
+      setThumbnail(product.image);
+    }
+  }, [product]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+        <FaSpinner className="animate-spin text-amber-500 text-4xl" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+        <p className="text-red-500">Error: {error.message}</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+        <p className="text-zinc-400">Product not found</p>
+      </div>
+    );
+  }
+
+  // Convert description string to array of bullet points
+  const descriptionPoints = product.description 
+    ? product.description.split('. ').filter(point => point.trim() !== '')
+    : [];
+
+  // Create a single-image array for the gallery (FakeStoreAPI only provides one image)
+  const productImages = product.image ? [product.image] : [];
 
   return (
-    <div className="bg-zinc-900 min-h-screen p-5 lg:p-16 flex justify-center items-center">
-      <div className="w-full max-w-6xl">
-        <div className="mb-4">
-          {/* <Breadcrumbs/> */}
-        </div>
-        {/* Product Details Section */}
-        <div className="flex flex-col md:flex-row mt-16 md:mt-0 lg:mt-0 justify-center items-center gap-8 mb-14">
-          {/* Left: Image Slider */}
-          <div className="lg:h-[400px] lg:w-[400px] w-[200px] h-[200px] mb-16 flex justify-center items-center">
-            <SwiperSlider images={images} />
-          </div>
+    <div className="mx-auto px-6 py-10 min-h-screen bg-zinc-900 text-zinc-200">
+      <div className="w-11/12 mx-auto">
+        <p className="text-zinc-400">
+          <span>Home</span> /<span> Products</span> /
+          <span> {product.category}</span> /
+          <span className="text-amber-500"> {product.title}</span> 
+        </p>
 
-          {/* Right: Product Info */}
-          <div className="text-white flex flex-col space-y-6">
-            <h1 className="text-4xl font-bold text-white">Luxurious Elixir</h1>
-            <p className="text-gray-400 leading-relaxed">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Temporibus natus doloribus impedit odit, nam corporis aspernatur!
-              A in eveniet iste!
-            </p>
-
-            {/* Rating */}
-            <div className="flex items-center space-x-2 mt-2">
-              <span className="text-amber-500 text-lg">★★★★★</span>
-              <span className="text-gray-400 text-sm">(90 Reviews)</span>
-            </div>
-
-            {/* Stock Availability */}
-            <div className="text-amber-500 font-semibold mt-2">In Stock</div>
-
-            {/* Size Selection */}
-            <div className="flex space-x-3 mt-4">
-              {sizeOptions.map((option) => (
-                <div key={option.size} className="flex flex-col items-center">
-                  <button
-                    className={`border-2 rounded-lg p-1 transition duration-200 ${
-                      selectedSize === option.size
-                        ? "border-amber-500 shadow-lg shadow-amber-500/10"
-                        : "border-gray-600 hover:border-amber-500"
-                    }`}
-                    onClick={() => setSelectedSize(option.size)}
-                  >
-                    <img
-                      src={option.image}
-                      alt={option.size}
-                      className="h-20 w-16 object-cover" // Adjust image size as needed
-                    />
-                  </button>
-                  <span className="text-gray-400 text-sm mt-2">
-                    {option.size}
-                  </span>
+        <div className="flex flex-col md:flex-row gap-16 mt-4">
+          <div className="flex gap-3">
+            <div className="flex flex-col gap-3">
+              {productImages.map((image, index) => (
+                <div
+                  key={index}
+                  onClick={() => setThumbnail(image)}
+                  className={`border max-w-24 rounded overflow-hidden cursor-pointer transition-all ${
+                    thumbnail === image
+                      ? "border-amber-500"
+                      : "border-zinc-700"
+                  }`}
+                >
+                  <img 
+                    src={image} 
+                    alt={`Thumbnail ${index + 1}`} 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               ))}
             </div>
 
-            {/* Price */}
-            <div className="text-2xl text-[#AB572D] font-bold mt-4">
-              <span className="text-4xl">250.00 ৳</span>
+            <div className="border border-zinc-700 max-w-100 rounded-lg overflow-hidden bg-zinc-800">
+              {thumbnail && (
+                <img 
+                  src={thumbnail} 
+                  alt="Selected product" 
+                  className="w-full h-full object-contain"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="text-sm w-full md:w-1/2">
+            <h1 className="text-3xl font-medium text-amber-400">
+              {product.title} {/* Changed from name to title */}
+            </h1>
+
+            <div className="flex items-center gap-0.5 mt-1">
+              {Array(5)
+                .fill("")
+                .map((_, i) =>
+                  product.rating?.rate > i ? ( // Changed to rating.rate
+                    <FaStar key={i} className="text-amber-400" />
+                  ) : (
+                    <FaRegStar key={i} className="text-amber-400 opacity-35" />
+                  )
+                )}
+              <p className="text-base ml-2 text-zinc-300">({product.rating?.rate})</p> {/* Changed to rating.rate */}
             </div>
 
-            {/* Quantity Selector */}
-            <div className="flex items-center space-x-4 mt-4">
-              <span className="text-lg">Qty</span>
-              <div className="flex items-center border border-gray-600 rounded-lg px-3">
-                <button
-                  className="px-3 text-lg font-bold hover:text-amber-500 transition cursor-pointer"
-                  onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}
-                >
-                  <FaMinus className="text-sm" />
-                </button>
-                <span className="px-4 text-lg text-amber-500">{quantity}</span>
-                <button
-                  className="px-3 text-lg font-bold cursor-pointer hover:text-amber-500 transition"
-                  onClick={() => setQuantity((prev) => prev + 1)}
-                >
-                  <FaPlus className="text-sm" />
-                </button>
-              </div>
+            <div className="mt-6">
+              <p className="text-2xl font-medium text-amber-400">
+                ${product.price} {/* FakeStoreAPI doesn't have offerPrice */}
+              </p>
+              <span className="text-zinc-500">
+                (inclusive of all taxes)
+              </span>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex space-x-4 mt-5">
-              {/* Add to Bag Button */}
-              <button className="bg-[#D9D9D9] text-[#AB572D] font-semibold py-3 rounded-lg text-lg hover:bg-[#a3a3a3] transition duration-200 cursor-pointer w-full active:scale-95">
-                Add to Bag
+            <p className="text-base font-medium mt-6 text-amber-400">
+              About Product
+            </p>
+            <ul className="list-disc ml-4 text-zinc-400">
+              {descriptionPoints.map((desc, index) => (
+                <li key={index}>{desc}</li>
+              ))}
+            </ul>
+
+            <div className="flex items-center mt-10 gap-4 text-base">
+              <button className="w-full py-3.5 cursor-pointer font-medium bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition rounded-lg flex items-center justify-center gap-2">
+                <FaShoppingCart /> Add to Cart
               </button>
-
-              {/* Wishlist Button */}
-              <button className="border-2 border-gray-600 px-5 py-2 rounded-lg flex items-center justify-center hover:bg-emerald-500 hover:text-black transition duration-200 w-full">
-                ❤️ Wishlist
+              <button className="w-full py-3.5 cursor-pointer font-medium bg-amber-500 text-zinc-900 hover:bg-amber-400 transition rounded-lg flex items-center justify-center gap-2">
+                <FaBolt /> Buy now
               </button>
             </div>
           </div>

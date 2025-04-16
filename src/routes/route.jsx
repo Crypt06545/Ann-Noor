@@ -1,4 +1,10 @@
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 
 // Layouts
 import MainLayout from "../layouts/MainLayout";
@@ -11,7 +17,6 @@ import ProductPage from "../pages/ProductDetails";
 import OrderInfo from "../pages/OrderInfo";
 import SignIn from "../pages/SignIn";
 import SignUp from "../pages/SignUp";
-import { useAppContext } from "../context/AppContext";
 
 // Dashboard pages
 import DAddProduct from "../pages/Dashboard/DAddProduct";
@@ -19,22 +24,35 @@ import Statics from "../pages/Dashboard/Statics";
 import ManageProducts from "../pages/Dashboard/ManageProducts";
 import Orders from "../pages/Dashboard/Orders";
 import Users from "../pages/Dashboard/Users";
-import Navbar from "../components/Navbar";
 
-export default function AppRoutes() {
-  const { user } = useAppContext();
+import { useAppContext } from "../context/AppContext";
 
-  const isAdminPath = useLocation().pathname.includes('admin')
+export function AppRoutesWrapper() {
+  const { showUserLogin,user } = useAppContext();
 
-  return (
-    <div>
-      {isAdminPath ? null : <Navbar/>}
-      <div>
-        <Routes>
-          <Route path="/" element={<Home/>}/>
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route element={<MainLayout />} errorElement={<Errorpage />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/about-products/:id" element={<ProductPage />} />
+        {/* <Route path="/order-info/:orderId" element={<OrderInfo />} /> */}
 
-        </Routes>
-      </div>
-    </div>
+        {/* Dashboard Routes */}
+        <Route path="/admin" element={<DashLayout />}>
+          <Route path="statistics" element={<Statics />} />
+          <Route path="add-product" element={<DAddProduct />} />
+          <Route path="manage-products" element={<ManageProducts />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="users" element={<Users />} />
+        </Route>
+
+        <Route path="/login" element={user ? <Navigate to="/" /> : <SignIn />}/>
+        <Route path="/signup" element={user ? <Navigate to="/" /> : <SignUp />}/>
+
+
+      </Route>
+    )
   );
+
+  return <RouterProvider router={router} />;
 }

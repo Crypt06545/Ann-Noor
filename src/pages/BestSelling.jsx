@@ -48,6 +48,7 @@ const BestSelling = () => {
 
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
+        
             <Card
               key={product.id}
               id={product.id}

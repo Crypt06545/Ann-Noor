@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { FaStar, FaRegStar, FaShoppingCart, FaMinus, FaPlus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Card = ({ id, title, price, image }) => {
-  const [count, setCount] = useState(0);
   const { currency,cartItems,addToCart,removeFromCart } = useAppContext();
+  const navigate = useNavigate()
   const product = {
     name: title,
     category: "Sports",
@@ -13,18 +13,18 @@ const Card = ({ id, title, price, image }) => {
     rating: 4,
     image: image,
   };
-console.log(product);
+// console.log(product);
 
   return (
-    <div className="border border-gray-300 rounded-lg p-4 bg-white w-full h-full flex flex-col hover:shadow-md transition-shadow">
+    <div onClick={()=>{navigate(`/about-products/${id}`);scrollTo(0,0)}}  className="border border-gray-300 rounded-lg p-4 bg-white w-full h-full flex flex-col hover:shadow-md transition-shadow">
       {/* Product Image */}
       <div className="group cursor-pointer flex items-center justify-center h-48 md:h-56 lg:h-64 mb-4">
         <img
           className="group-hover:scale-105 transition-transform duration-300 h-full object-contain"
-          // src={product.image}
-          // alt={product.name}
-          src="https://fakestoreapi.com/img/71YAIFU48IL._AC_UL640_QL65_ML3_.jpg"
-          alt="da"
+          src={product.image}
+          alt={product.name}
+          // src="https://fakestoreapi.com/img/71YAIFU48IL._AC_UL640_QL65_ML3_.jpg"
+          // alt="da"
         />
       </div>
 
