@@ -1,5 +1,6 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { dummyProducts } from "../assets/assets";
 
 export const AppContext = createContext();
 
@@ -8,10 +9,19 @@ export const AppContextProvider = ({ children }) => {
 
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showUserLogin, setShowUserLogin] = useState(true);
+
+  const [showUserLogin, setShowUserLogin] = useState(null);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({});
 
+
+  const fetchProducts = async()=>{
+    setProducts(dummyProducts)
+  }
+
+  useEffect(()=>{
+    fetchProducts()
+  },[])
   // add product to cart
   const addToCart = (itemId) => {
     let cartData = structuredClone(cartItems);
@@ -56,7 +66,7 @@ export const AppContextProvider = ({ children }) => {
   const cartAmount = () => {
     let totalAmount = 0;
     for (const itemId in cartItems) {
-      const itemInfo = products.find((product) => product.id === itemId);
+      const itemInfo = products.find((product) => product._id === itemId);
       if (itemInfo && cartItems[itemId] > 0) {
         totalAmount += itemInfo.offerPrice * cartItems[itemId];
       }

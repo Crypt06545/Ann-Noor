@@ -1,63 +1,49 @@
-import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
 import { FaTrash, FaArrowLeft, FaChevronDown } from "react-icons/fa";
+import { fetchBestSellingProducts } from "../api/Api";
+import { useAppContext } from "../context/AppContext";
+import { dummyAddress } from "../assets/assets";
+import { useNavigate } from "react-router-dom";
+import BkashPayment from "./BkashPayment";
+import NagadPayment from "./NagadPayment";
 
 const Cart = () => {
+  const {
+    currency,
+    cartItems,
+    removeFromCart,
+    cartCount,
+    updateCartItem,
+    cartAmount,
+    products,
+  } = useAppContext();
+
+  const [cartArray, setCartArray] = useState([]);
+  const [addresses, setAddresses] = useState(dummyAddress);
   const [showAddress, setShowAddress] = useState(false);
-  const products = [
-    {
-      name: "Running Shoes",
-      description: [
-        "Lightweight and comfortable",
-        "Breathable mesh upper",
-        "Ideal for jogging and casual wear",
-      ],
-      offerPrice: 250,
-      price: 200,
-      quantity: 1,
-      size: 42,
-      image:
-        "https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImage.png",
-      category: "Footwear",
-    },
-    {
-      name: "Running Shoes",
-      description: [
-        "Lightweight and comfortable",
-        "Breathable mesh upper",
-        "Ideal for jogging and casual wear",
-      ],
-      offerPrice: 250,
-      price: 200,
-      quantity: 1,
-      size: 42,
-      image:
-        "https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImage2.png",
-      category: "Footwear",
-    },
-    {
-      name: "Running Shoes",
-      description: [
-        "Lightweight and comfortable",
-        "Breathable mesh upper",
-        "Ideal for jogging and casual wear",
-      ],
-      offerPrice: 250,
-      price: 200,
-      quantity: 1,
-      size: 42,
-      image:
-        "https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImage3.png",
-      category: "Footwear",
-    },
-  ];
+  const [selectedAddress, setSelectedAddress] = useState(dummyAddress[0]);
+  const [paymentOption, setPaymentOption] = useState("COD");
+  const navigate = useNavigate();
 
-  const totalAmount = products.reduce(
-    (total, product) => total + product.offerPrice * product.quantity,
-    0
-  );
-  const tax = totalAmount * 0.02;
+  const gertCart = () => {
+    let tempArray = [];
+    for (const key in cartItems) {
+      const product = products.find((item) => item._id === key);
+      product.quantity = cartItems[key];
+      tempArray.push(product);
+    }
+    setCartArray(tempArray);
+  };
 
-  return (
+  useEffect(() => {
+    if (products.length > 0 && cartItems) {
+      gertCart();
+    }
+  }, [products, cartItems]);
+  // Calculate totals only when products exist
+
+  return products.length > 0 && cartItems ? (
     <div className="min-h-screen bg-zinc-900 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -68,7 +54,7 @@ const Cart = () => {
                 Shopping Cart
               </h1>
               <span className="text-sm bg-zinc-700 text-amber-400 px-3 py-1 rounded-full">
-                {products.length} Items
+                {cartCount()} Items
               </span>
             </div>
 
@@ -78,16 +64,22 @@ const Cart = () => {
               <p className="text-center">ACTION</p>
             </div>
 
-            {products.map((product, index) => (
+            {cartArray.map((product, index) => (
               <div
                 key={index}
                 className="grid grid-cols-[2fr_1fr_1fr] text-zinc-300 items-center py-5 border-b border-zinc-700 hover:bg-zinc-750 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 flex items-center justify-center border border-zinc-700 rounded-lg bg-zinc-800 overflow-hidden">
+                  <div
+                    onClick={() => {
+                      navigate(`/products/${product._id}`);
+                      scrollTo(0, 0);
+                    }}
+                    className="w-20 h-20 flex items-center justify-center border border-zinc-700 rounded-lg bg-zinc-800 overflow-hidden"
+                  >
                     <img
                       className="w-full h-full object-cover"
-                      src={product.image}
+                      src={product.image[0]}
                       alt={product.name}
                     />
                   </div>
@@ -96,37 +88,56 @@ const Cart = () => {
                       {product.name}
                     </p>
                     <div className="text-xs text-zinc-400 space-y-1 mt-1">
-                      <p>Size: {product.size || "N/A"}</p>
+                      <p>weight: {product.weight || "N/A"}</p>
                       <div className="flex items-center">
                         <span className="mr-2">Qty:</span>
                         <select
+                          onChange={(e) =>
+                            updateCartItem(product._id, Number(e.target.value))
+                          }
+                          value={cartItems[product._id]}
                           className="bg-zinc-700 border border-zinc-600 text-zinc-200 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-amber-500"
                           defaultValue={product.quantity}
                         >
-                          {Array.from({ length: 5 }, (_, i) => i + 1).map(
-                            (num) => (
-                              <option key={num} value={num}>
-                                {num}
+                          {Array(
+                            cartItems[product._id] > 9
+                              ? cartItems[product._id]
+                              : 9
+                          )
+                            .fill("")
+                            .map((_, index) => (
+                              <option key={index} value={index + 1}>
+                                {index + 1}
                               </option>
-                            )
-                          )}
+                            ))}
                         </select>
                       </div>
                     </div>
                   </div>
                 </div>
                 <p className="text-center font-medium text-amber-400">
-                  ${product.offerPrice * product.quantity}
+                  {currency}
+                  {product.offerPrice * product.quantity}
                 </p>
                 <div className="flex justify-center">
-                  <button className="p-2 text-red-500 hover:text-red-400 hover:bg-zinc-700 rounded-full transition-colors">
+                  <button
+                    onClick={() => {
+                      removeFromCart(product._id);
+                    }}
+                    className="p-2 text-red-500 hover:text-red-400 hover:bg-zinc-700 rounded-full transition-colors"
+                  >
                     <FaTrash className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             ))}
 
-            <button className="flex items-center gap-2 mt-8 text-amber-500 hover:text-amber-400 font-medium transition-colors">
+            <button
+              onClick={() => {
+                navigate("/");
+              }}
+              className="flex items-center gap-2 mt-8 text-amber-500 hover:text-amber-400 font-medium transition-colors"
+            >
               <FaArrowLeft className="w-3 h-3" />
               <span>Continue Shopping</span>
             </button>
@@ -151,7 +162,7 @@ const Cart = () => {
                     onClick={() => setShowAddress(!showAddress)}
                     className="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1"
                   >
-                    Change{" "}
+                    {selectedAddress ? "Change" : "Select Address"}
                     <FaChevronDown
                       className={`w-2 h-2 transition-transform ${
                         showAddress ? "rotate-180" : ""
@@ -159,47 +170,106 @@ const Cart = () => {
                     />
                   </button>
                 </div>
+
                 {showAddress ? (
                   <div className="bg-zinc-750 border border-zinc-700 rounded-lg p-3 space-y-2">
-                    <div
-                      className="p-2 hover:bg-zinc-700 rounded cursor-pointer"
-                      onClick={() => setShowAddress(false)}
-                    >
-                      <p className="text-zinc-200 font-medium">New York, USA</p>
-                      <p className="text-xs text-zinc-400">
-                        123 Broadway, NY 10001
-                      </p>
-                    </div>
-                    <button className="w-full text-center text-amber-500 hover:text-amber-400 text-sm p-2">
-                      + Add new address
-                    </button>
+                    {addresses.length > 0 ? (
+                      <>
+                        {addresses.map((address, index) => (
+                          <div
+                            key={index}
+                            className="p-2 hover:bg-zinc-700 rounded cursor-pointer"
+                            onClick={() => {
+                              setSelectedAddress(address);
+                              setShowAddress(false);
+                            }}
+                          >
+                            <p className="text-zinc-200 font-medium">
+                              {address.city}, {address.country}
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                              {address.street}, {address.zipCode}
+                            </p>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            navigate("/shipping-address");
+                            setShowAddress(false);
+                          }}
+                          className="w-full text-center text-amber-500 hover:text-amber-400 text-sm p-2"
+                        >
+                          + Add new address
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-zinc-400 mb-2">No saved addresses</p>
+                        <button
+                          onClick={() => {
+                            navigate("/shipping-address");
+                            setShowAddress(false);
+                          }}
+                          className="text-amber-500 hover:text-amber-400 text-sm"
+                        >
+                          + Add your first address
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <p className="text-zinc-300 bg-zinc-750 border border-zinc-700 rounded-lg p-3">
-                    No address selected
-                  </p>
+                  <div className="text-zinc-300 bg-zinc-750 border border-zinc-700 rounded-lg p-3">
+                    {selectedAddress ? (
+                      <>
+                        <p className="text-zinc-200 font-medium">
+                          {selectedAddress.city}, {selectedAddress.country}
+                        </p>
+                        <p className="text-xs text-zinc-400">
+                          {selectedAddress.street}, {selectedAddress.zipCode}
+                        </p>
+                      </>
+                    ) : (
+                      <p>No address selected</p>
+                    )}
+                  </div>
                 )}
               </div>
 
+              {/* payment options  */}
+
+              {/* Payment Options */}
               <div className="mt-4 mb-4 md:mt-0 md:mb-0">
                 <p className="text-sm font-medium text-zinc-400 mb-2">
                   Payment Method
                 </p>
-                <select className="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-amber-500">
-                  <option className="bg-zinc-800 text-zinc-100" value="COD">
-                    Cash On Delivery
-                  </option>
-                  <option className="bg-zinc-800 text-zinc-100" value="Online">
-                    Online Payment
-                  </option>
+                <select
+                  value={paymentOption}
+                  onChange={(e) => setPaymentOption(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-amber-500"
+                >
+                  <option value="COD">Cash On Delivery</option>
+                  <option value="BKASH">BKASH</option>
+                  <option value="NAGAD">NAGAD</option>
                 </select>
+
+                {/* Render payment components conditionally */}
+                {paymentOption === "BKASH" && (
+                  <BkashPayment amount={cartAmount()} currency={currency} />
+                )}
+
+                {paymentOption === "NAGAD" && (
+                  <NagadPayment amount={cartAmount()} currency={currency} />
+                )}
               </div>
             </div>
 
             <div className="mt-6 pt-6 border-t border-zinc-700 space-y-3">
               <div className="flex justify-between text-zinc-300">
-                <span>Subtotal</span>
-                <span>${totalAmount.toFixed(2)}</span>
+                <span>Price</span>
+                <span>
+                  {currency}
+                  {cartAmount()}
+                </span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Shipping</span>
@@ -207,11 +277,17 @@ const Cart = () => {
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Tax (2%)</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>
+                  {currency}
+                  {(cartAmount() * 2) / 100}
+                </span>
               </div>
               <div className="flex justify-between text-lg font-bold text-amber-400 pt-3">
                 <span>Total</span>
-                <span>${(totalAmount + tax).toFixed(2)}</span>
+                <span>
+                  {currency}
+                  {cartAmount() + (cartAmount() * 2) / 100}
+                </span>
               </div>
             </div>
 
@@ -222,7 +298,7 @@ const Cart = () => {
         </div>
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default Cart;
