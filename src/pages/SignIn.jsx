@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LogIn, Loader } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -17,6 +17,7 @@ const SignIn = () => {
   } = useForm();
   const { loading, setLoading } = useAppContext();
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   // gsap animation
   useGSAP(() => {
@@ -41,10 +42,13 @@ const SignIn = () => {
         email: formdata.email,
         password: formdata.password,
       });
-      // console.log(data);
+
       toast.success(data?.data);
       reset();
+      navigate("/");
       setLoading(false);
+
+      // console.log(data);
     } catch (error) {
       // console.log(error);
       toast.error(error?.response?.data?.message || "Login failed!!");
