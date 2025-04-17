@@ -9,19 +9,18 @@ export const AppContextProvider = ({ children }) => {
 
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(true);
-
+  const [loading, setLoading] = useState(false);
   const [showUserLogin, setShowUserLogin] = useState(false);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({});
 
+  const fetchProducts = async () => {
+    setProducts(dummyProducts);
+  };
 
-  const fetchProducts = async()=>{
-    setProducts(dummyProducts)
-  }
-
-  useEffect(()=>{
-    fetchProducts()
-  },[])
+  useEffect(() => {
+    fetchProducts();
+  }, []);
   // add product to cart
   const addToCart = (itemId) => {
     let cartData = structuredClone(cartItems);
@@ -90,6 +89,8 @@ export const AppContextProvider = ({ children }) => {
     cartItems,
     cartCount,
     cartAmount,
+    loading,
+    setLoading,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

@@ -5,7 +5,9 @@ import { LogIn, Loader } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useForm } from "react-hook-form";
-
+import { api } from "../api/Api";
+import toast from "react-hot-toast";
+import { useAppContext } from "../context/AppContext";
 const SignIn = () => {
   const {
     register,
@@ -13,16 +15,8 @@ const SignIn = () => {
     reset,
     formState: { errors },
   } = useForm();
+  const { loading, setLoading } = useAppContext();
   const [showPassword, setShowPassword] = useState(false);
-  const { loading, setLoading } = useState(false);
-
-
-  // const [state, setState] = React.useState("login");
-  //   const [name, setName] = React.useState("");
-  //   const [email, setEmail] = React.useState("");
-  //   const [password, setPassword] = React.useState("");
-
-
 
   // gsap animation
   useGSAP(() => {
@@ -39,9 +33,23 @@ const SignIn = () => {
     setShowPassword(!showPassword);
   };
 
-  const onSubmit = (data) => {
-    console.log(data);
-    reset();
+  // handle signinSubmit
+  const onSubmit = async (formdata) => {
+    try {
+      setLoading(true);
+      const { data } = await api.post("/users/login", {
+        email: formdata.email,
+        password: formdata.password,
+      });
+      // console.log(data);
+      toast.success(data?.data);
+      reset();
+      setLoading(false);
+    } catch (error) {
+      // console.log(error);
+      toast.error(error?.response?.data?.message || "Login failed!!");
+      setLoading(false);
+    }
   };
 
   return (
