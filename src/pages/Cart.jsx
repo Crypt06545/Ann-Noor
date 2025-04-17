@@ -26,6 +26,9 @@ const Cart = () => {
 
   const isCartEmpty = cartCount() === 0;
 
+  const palceOrder =()=>{
+    
+  }
   const gertCart = () => {
     let tempArray = [];
     for (const key in cartItems) {
@@ -47,6 +50,8 @@ const Cart = () => {
   if (products.length === 0 || !cartItems) {
     return null;
   }
+
+
 
   return (
     <div className="min-h-screen bg-zinc-900 p-4 md:p-8">
@@ -111,7 +116,10 @@ const Cart = () => {
                             <span className="mr-2">Qty:</span>
                             <select
                               onChange={(e) =>
-                                updateCartItem(product._id, Number(e.target.value))
+                                updateCartItem(
+                                  product._id,
+                                  Number(e.target.value)
+                                )
                               }
                               value={cartItems[product._id]}
                               className="bg-zinc-700 border border-zinc-600 text-zinc-200 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-amber-500"
@@ -175,7 +183,7 @@ const Cart = () => {
               <div className="text-center py-8">
                 <p className="text-zinc-300 mb-4">No products in cart</p>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate("/")}
                   className="text-amber-500 hover:text-amber-400 font-medium"
                 >
                   Continue Shopping
@@ -228,14 +236,16 @@ const Cart = () => {
                                 navigate("/shipping-address");
                                 setShowAddress(false);
                               }}
-                              className="w-full text-center text-amber-500 hover:text-amber-400 text-sm p-2"
+                              className="w-full cursor-pointer text-center text-amber-500 hover:text-amber-400 text-sm p-2"
                             >
                               + Add new address
                             </button>
                           </>
                         ) : (
                           <div className="text-center py-4">
-                            <p className="text-zinc-400 mb-2">No saved addresses</p>
+                            <p className="text-zinc-400 mb-2">
+                              No saved addresses
+                            </p>
                             <button
                               onClick={() => {
                                 navigate("/shipping-address");
@@ -256,7 +266,8 @@ const Cart = () => {
                               {selectedAddress.city}, {selectedAddress.country}
                             </p>
                             <p className="text-xs text-zinc-400">
-                              {selectedAddress.street}, {selectedAddress.zipCode}
+                              {selectedAddress.street},{" "}
+                              {selectedAddress.zipCode}
                             </p>
                           </>
                         ) : (
@@ -321,7 +332,8 @@ const Cart = () => {
                 </div>
 
                 <button
-                  className={`w-full py-3 mt-6 text-zinc-900 font-bold rounded-lg transition-colors ${
+                onClick={palceOrder}
+                  className={`w-full  cursor-pointer py-3 mt-6 text-zinc-900 font-bold rounded-lg transition-colors ${
                     isCartEmpty
                       ? "bg-zinc-600 cursor-not-allowed"
                       : "bg-amber-500 hover:bg-amber-600"

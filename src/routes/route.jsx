@@ -27,6 +27,8 @@ import Users from "../pages/Dashboard/Users";
 
 import { useAppContext } from "../context/AppContext";
 import Cart from "../pages/Cart";
+import ShippingAddress from "../pages/ShippingAddress";
+import MyOrders from "../pages/MyOrders";
 
 export function AppRoutesWrapper() {
   const { showUserLogin,user } = useAppContext();
@@ -37,6 +39,8 @@ export function AppRoutesWrapper() {
         <Route path="/" element={<Home />} />
         <Route path="/about-products/:id" element={<ProductPage />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/shipping-address" element={<ShippingAddress />} />
+        <Route path="/my-orders" element={<MyOrders />} />
         {/* <Route path="/order-info/:orderId" element={<OrderInfo />} /> */}
 
         {/* Dashboard Routes */}
