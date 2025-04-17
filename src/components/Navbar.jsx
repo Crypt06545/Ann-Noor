@@ -1,5 +1,5 @@
 import { useGSAP } from "@gsap/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FiShoppingBag } from "react-icons/fi";
 import { NavLink } from "react-router-dom";
 import gsap from "gsap";
@@ -9,9 +9,9 @@ import { useAppContext } from "../context/AppContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [cartItemsCount, setCartItemsCount] = useState(1);
 
-  const { user, setUser, setShowUserLogin, cartAmount, cartCount } =
+
+  const { user, setUser, cartCount } =
     useAppContext();
   const navLinks = [
     { name: "Home", path: "/" },
@@ -81,11 +81,7 @@ const Navbar = () => {
         {/* Desktop Icons */}
         <div className="dev-icons hidden md:flex text-xl space-x-4 items-center">
           {!user ? (
-            <button
-              onClick={() => {
-                setShowUserLogin();
-              }}
-            >
+            <button>
               <NavLink
                 to="/login"
                 className="px-5 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600 transition-all duration-300 font-medium"
@@ -168,11 +164,7 @@ const Navbar = () => {
                     </NavLink>
                   </button>
                 ) : (
-                  <button
-                    onClick={() => {
-                      setShowUserLogin(true);
-                    }}
-                  >
+                  <button>
                     <NavLink
                       className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
                       onClick={() => setIsOpen(false)}

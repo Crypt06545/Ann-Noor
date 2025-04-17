@@ -5,11 +5,11 @@ import { FaUsers } from "react-icons/fa";
 import { TbTruckDelivery } from "react-icons/tb";
 
 const navLinks = [
-  { name: "Dashboard", path: "/admin", icon: <MdOutlineDashboard /> ,},
-  { name: "Add Product", path: "/admin/add-product", icon: <MdAddBox />},
-  { name: "Manage Products", path: "/admin/manage-products", icon: <MdInventory />},
-  { name: "Orders", path: "/admin/orders" ,icon: <TbTruckDelivery /> },
-  { name: "Users", path: "/admin/users" ,icon:  <FaUsers />},
+  { name: "Dashboard", path: "/dashboard", icon: <MdOutlineDashboard /> ,},
+  { name: "Add Product", path: "/dashboard/add-product", icon: <MdAddBox />},
+  { name: "Manage Products", path: "/dashboard/manage-products", icon: <MdInventory />},
+  { name: "Orders", path: "/dashboard/orders" ,icon: <TbTruckDelivery /> },
+  { name: "Users", path: "/dashboard/users" ,icon:  <FaUsers />},
 ];
 
 const AdminLayout = () => {

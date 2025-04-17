@@ -5,9 +5,9 @@ import { LogIn, Loader } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useForm } from "react-hook-form";
-import { api } from "../api/Api";
 import toast from "react-hot-toast";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext} from "../context/AppContext";
+import axiosInstance from "../lib/axios";
 const SignIn = () => {
   const {
     register,
@@ -15,7 +15,7 @@ const SignIn = () => {
     reset,
     formState: { errors },
   } = useForm();
-  const { loading, setLoading } = useAppContext();
+  const { loading, setLoading,setUser,user } = useAppContext();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -38,18 +38,20 @@ const SignIn = () => {
   const onSubmit = async (formdata) => {
     try {
       setLoading(true);
-      const { data } = await api.post("/users/login", {
+      const { data } = await axiosInstance.post("/users/login", {
         email: formdata.email,
         password: formdata.password,
       });
-
-      toast.success(data?.data);
-      reset();
-      navigate("/");
-      setLoading(false);
-
+      if (data.success) {
+        setUser(true);
+        toast.success(data?.data);
+        reset();
+        navigate("/");
+        setLoading(false);
+      }
       // console.log(data);
     } catch (error) {
+      setUser(false);
       // console.log(error);
       toast.error(error?.response?.data?.message || "Login failed!!");
       setLoading(false);

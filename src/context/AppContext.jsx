@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { dummyProducts } from "../assets/assets";
+import axiosInstance from "../lib/axios";
 
 export const AppContext = createContext();
 
@@ -18,7 +19,23 @@ export const AppContextProvider = ({ children }) => {
     setProducts(dummyProducts);
   };
 
+  // get user
+  const fetchUser = async () => {
+    try {
+      const { data } = await axiosInstance.get("/users/is-auth");
+      console.log(data);
+      if (data.success) {
+        setUser(data.message);
+      } else {
+        setUser(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
+    fetchUser();
     fetchProducts();
   }, []);
   // add product to cart
