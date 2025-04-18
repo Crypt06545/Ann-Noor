@@ -3,7 +3,7 @@ import Card from "../components/Card";
 import { useAppContext } from "../context/AppContext";
 const BestSelling = () => {
   const { products } = useAppContext();
-  console.log(products);
+  // console.log(products);
 
   return (
     <div className="min-h-screen w-11/12 mx-auto">

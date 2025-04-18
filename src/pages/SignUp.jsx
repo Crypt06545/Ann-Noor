@@ -6,11 +6,14 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useForm } from "react-hook-form";
 import { useAppContext } from "../context/AppContext";
+import { userSignUp } from "../api/Api";
+import axiosInstance from "../lib/axios";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { user, loading } = useAppContext();
+  const { setUser, loading, setLoading } = useAppContext();
   const navigate = useNavigate();
 
   const {
@@ -39,8 +42,31 @@ const SignUp = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const onSubmit = async (data) => {
-    console.log(data);
+  // handle signIn submit
+  const onSubmit = async (formData) => {
+    console.log(formData);
+    try {
+      setLoading(true);
+      const { data } = await axiosInstance.post("/users/register", {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+      // console.log(data);
+      if (data.success) {
+        setUser(data.data);
+        toast.success(data.message);
+        navigate("/login");
+      }
+      // Reset form
+      reset();
+    } catch (error) {
+      // console.log(error);
+      setUser(null);
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

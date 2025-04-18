@@ -1,14 +1,8 @@
-import axios from "axios";
-export const api = axios.create({
-  baseURL: `${import.meta.env.VITE_BASE_URL}/api/v1`,
-  withCredentials: true,
-});
+import { useAppContext } from "../context/AppContext";
+import axiosInstance from "../lib/axios";
 
-export const userSignIn = async (data) => {
-  try {
-    const { response } = await api.post(data);
-    return response;
-  } catch (error) {
-    console.log(error);
-  }
+export const userSignUp = async (data) => {
+  console.log(data);
 };
+
+// signout

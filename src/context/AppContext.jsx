@@ -23,14 +23,16 @@ export const AppContextProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const { data } = await axiosInstance.get("/users/is-auth");
-      console.log(data);
+      // console.log(data);
       if (data.success) {
         setUser(data.message);
+        cartItems(data.message.cartItems);
       } else {
         setUser(false);
       }
     } catch (error) {
-      console.log(error);
+      // setUser(null);
+      // console.log(error.response.data.message);
     }
   };
 

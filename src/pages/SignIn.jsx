@@ -15,7 +15,7 @@ const SignIn = () => {
     reset,
     formState: { errors },
   } = useForm();
-  const { loading, setLoading,setUser,user } = useAppContext();
+  const { loading, setLoading,setUser } = useAppContext();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 

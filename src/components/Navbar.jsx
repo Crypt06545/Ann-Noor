@@ -1,18 +1,18 @@
 import { useGSAP } from "@gsap/react";
 import React, { useEffect, useState } from "react";
 import { FiShoppingBag } from "react-icons/fi";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
 import { useAppContext } from "../context/AppContext";
+import axiosInstance from "../lib/axios";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-
-  const { user, setUser, cartCount } =
-    useAppContext();
+  const navigate = useNavigate();
+  const { user, setUser, cartCount } = useAppContext();
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
@@ -26,8 +26,21 @@ const Navbar = () => {
   };
 
   // logout
-  const logOut = () => {
-    setUser(null);
+  const logOut = async () => {
+    try {
+      const { data } = await axiosInstance.post("/users/logout");
+      if (data.success) {
+        toast.success(data?.message);
+        setUser(null);
+        navigate("/");
+      } else {
+        toast.error(data?.message);
+      }
+      // console.log(data);
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    }
   };
 
   useGSAP(() => {
