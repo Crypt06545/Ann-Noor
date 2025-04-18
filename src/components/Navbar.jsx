@@ -13,6 +13,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { user, setUser, cartCount } = useAppContext();
+
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
@@ -20,12 +21,10 @@ const Navbar = () => {
     { name: "Products", path: "/products" },
   ];
 
-  // Toggle mobile menu
   const toggleNav = () => {
     setIsOpen(!isOpen);
   };
 
-  // logout
   const logOut = async () => {
     try {
       const { data } = await axiosInstance.post("/users/logout");
@@ -36,7 +35,6 @@ const Navbar = () => {
       } else {
         toast.error(data?.message);
       }
-      // console.log(data);
     } catch (error) {
       toast.error(error.message);
       console.log(error);
@@ -54,7 +52,6 @@ const Navbar = () => {
     });
   }, []);
 
-  // Mobile menu animation
   useEffect(() => {
     if (isOpen) {
       gsap.from(".mobile-nav", {
@@ -109,16 +106,17 @@ const Navbar = () => {
                 src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
                 alt="user"
               />
-              <ul className="hidden  group-hover:block absolute top-10 right-0 bg-zinc-800 shadow py-2.5 w-30 rounded-md tex-sm z-40">
+              <ul className="hidden group-hover:block absolute top-10 right-0 bg-zinc-800 shadow py-2.5 w-30 rounded-md text-sm z-40">
                 <li className="p-1.5 pl-3 hover:bg-zinc-600 cursor-pointer">
-                  <NavLink to={"/my-orders"}>My Orders</NavLink>
+                  <NavLink
+                    to={user.role === "admin" ? "/dashboard" : "/my-orders"}
+                  >
+                    {user.role === "admin" ? "Dashboard" : "My Orders"}
+                  </NavLink>
                 </li>
-                <li className="p-1.5  pl-3 hover:bg-zinc-600 cursor-pointer">
-                  <NavLink onClick={logOut}>Logout</NavLink>
+                <li className="p-1.5 pl-3 hover:bg-zinc-600 cursor-pointer">
+                  <button onClick={logOut}>Logout</button>
                 </li>
-                {/* <li>
-                  
-                </li> */}
               </ul>
             </div>
           )}
@@ -177,14 +175,24 @@ const Navbar = () => {
                     </NavLink>
                   </button>
                 ) : (
-                  <button>
+                  <>
                     <NavLink
-                      className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
+                      to={user.role === "admin" ? "/dashboard" : "/my-orders"}
+                      className="block w-full py-3 px-6 text-center bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded-lg transition-colors duration-200 mb-4"
                       onClick={() => setIsOpen(false)}
                     >
-                      Logout
+                      {user.role === "admin" ? "Dashboard" : "My Orders"}
                     </NavLink>
-                  </button>
+                    <button
+                      onClick={() => {
+                        logOut();
+                        setIsOpen(false);
+                      }}
+                      className="block w-full py-3 px-6 text-center bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                      Logout
+                    </button>
+                  </>
                 )}
               </div>
 

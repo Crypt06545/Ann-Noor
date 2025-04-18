@@ -14,6 +14,7 @@ export const AppContextProvider = ({ children }) => {
   const [showUserLogin, setShowUserLogin] = useState(null);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({});
+  const [authLoading, setAuthLoading] = useState(true);
 
   const fetchProducts = async () => {
     setProducts(dummyProducts);
@@ -22,17 +23,25 @@ export const AppContextProvider = ({ children }) => {
   // get user
   const fetchUser = async () => {
     try {
+      setAuthLoading(true);
       const { data } = await axiosInstance.get("/users/is-auth");
-      // console.log(data);
       if (data.success) {
-        setUser(data.message);
-        cartItems(data.message.cartItems);
+        setUser(data?.data);
+        setIsAdmin(data.data?.role === "admin");
+        if (data.data?.cartItems) {
+          setCartItems(data.data.cartItems);
+        }
+        console.log(data);
+        
       } else {
         setUser(false);
+        setIsAdmin(false);
       }
     } catch (error) {
-      // setUser(null);
-      // console.log(error.response.data.message);
+      setUser(false);
+      setIsAdmin(false);
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -110,6 +119,8 @@ export const AppContextProvider = ({ children }) => {
     cartAmount,
     loading,
     setLoading,
+    authLoading,
+    setAuthLoading,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

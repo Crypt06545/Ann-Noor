@@ -62,7 +62,7 @@ const SignUp = () => {
       reset();
     } catch (error) {
       // console.log(error);
-      setUser(null);
+      setUser(false);
       toast.error(error.response.data.message);
     } finally {
       setLoading(false);

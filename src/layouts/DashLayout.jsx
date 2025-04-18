@@ -1,43 +1,64 @@
-import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
-import AdminLayout from "./AdminLayout";
-import { FaBars, FaTimes } from "react-icons/fa";
+import React from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
+import { 
+  MdAddBox, 
+  MdInventory,
+  MdOutlineLocalShipping,
+  MdPeople,
+  MdDashboard
+} from 'react-icons/md';
 
 const DashLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  const sidebarLinks = [
+    { name: "Dashboard", path: "/dashboard", icon: <MdDashboard className="w-6 h-6" /> },
+    { name: "Add Product", path: "/dashboard/add-product", icon: <MdAddBox className="w-6 h-6" /> },
+    { name: "Manage Products", path: "/dashboard/manage-products", icon: <MdInventory className="w-6 h-6" /> },
+    { name: "Orders", path: "/dashboard/orders", icon: <MdOutlineLocalShipping className="w-6 h-6" /> },
+    { name: "Users", path: "/dashboard/users", icon: <MdPeople className="w-6 h-6" /> },
+  ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-white shadow-md z-20 p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
-        <button 
-          onClick={toggleSidebar}
-          className="text-gray-600 focus:outline-none"
-        >
-          {sidebarOpen ? (
-            <FaTimes className="w-6 h-6" />
-          ) : (
-            <FaBars className="w-6 h-6" />
-          )}
-        </button>
+    <div className="h-screen flex flex-col bg-zinc-900 text-white">
+      
+      {/* 🔼 Top Header */}
+      <div className="flex items-center justify-between px-4 border-b border-zinc-700 py-3 bg-zinc-800">
+        <NavLink to="/dashboard">
+          <span className="text-amber-500 font-bold text-xl">Admin Panel</span>
+        </NavLink>
+        <div className="flex items-center gap-5 text-zinc-300">
+          <p>Hi! Admin</p>
+          <button className="border border-amber-500 rounded-full text-sm px-4 py-1 text-amber-500 hover:bg-amber-500/10 transition-colors">
+            Logout
+          </button>
+        </div>
       </div>
 
-      {/* Sidebar - Hidden on mobile by default */}
-      <div 
-        className={`fixed md:relative z-10 w-64 h-full bg-gray-800 text-white transition-all duration-300 ease-in-out
-          ${sidebarOpen ? 'left-0' : '-left-full md:left-0'}`}
-      >
-        <AdminLayout />
-      </div>
+      {/* 🟨 Main Layout Section */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <div className="md:w-64 w-16 border-r text-base border-zinc-700 pt-4 flex flex-col bg-zinc-800">
+          {sidebarLinks.map((item) => (
+            <NavLink
+              end
+              to={item.path}
+              key={item.path}
+              className={({ isActive }) =>
+                `flex items-center py-3 px-4 gap-3 border-r-4 md:border-r-[6px] transition-colors
+                ${
+                  isActive 
+                    ? 'bg-amber-500/10 border-amber-500 text-amber-500'
+                    : 'border-zinc-800 text-zinc-300 hover:bg-zinc-700/90'
+                }`
+              }
+            >
+              {item.icon}
+              <span className="md:block hidden">{item.name}</span>
+            </NavLink>
+          ))}
+        </div>
 
-      {/* Main content area */}
-      <div className="flex-1 overflow-y-auto pt-16 md:pt-0">
-        <div>
+        {/* Page Content */}
+        <div className="flex-1 p-6 overflow-auto">
           <Outlet />
         </div>
       </div>
