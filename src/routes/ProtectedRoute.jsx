@@ -3,7 +3,6 @@ import { useAppContext } from "../context/AppContext";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 
 // ProtectedRoute.jsx
-// ProtectedRoute.jsx
 export const PrivateRoute = ({ children }) => {
   const { user, authLoading } = useAppContext();
 

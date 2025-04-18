@@ -51,7 +51,7 @@ const SignIn = () => {
         navigate("/");
         setLoading(false);
       }
-      console.log(data);
+      // console.log(data);
     } catch (error) {
       setUser(false);
       // console.log(error);

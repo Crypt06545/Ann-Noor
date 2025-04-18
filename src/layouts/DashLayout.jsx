@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { 
   MdAddBox, 
   MdInventory,
@@ -7,8 +7,13 @@ import {
   MdPeople,
   MdDashboard
 } from 'react-icons/md';
+import axiosInstance from '../lib/axios';
+import toast from 'react-hot-toast';
+import { useAppContext } from '../context/AppContext';
 
 const DashLayout = () => {
+  const navigate = useNavigate();
+  const { setUser } = useAppContext();
   const sidebarLinks = [
     { name: "Dashboard", path: "/dashboard", icon: <MdDashboard className="w-6 h-6" /> },
     { name: "Add Product", path: "/dashboard/add-product", icon: <MdAddBox className="w-6 h-6" /> },
@@ -17,23 +22,40 @@ const DashLayout = () => {
     { name: "Users", path: "/dashboard/users", icon: <MdPeople className="w-6 h-6" /> },
   ];
 
+  const handleLogOut = async()=>{
+    try {
+      const { data } = await axiosInstance.post("/users/logout");
+      if (data.success) {
+        toast.success(data?.message);
+        setUser(null);
+        navigate("/");
+      } else {
+        toast.error(data?.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    }
+    
+  }
+
   return (
     <div className="h-screen flex flex-col bg-zinc-900 text-white">
       
-      {/* 🔼 Top Header */}
+      {/* Top Header */}
       <div className="flex items-center justify-between px-4 border-b border-zinc-700 py-3 bg-zinc-800">
         <NavLink to="/dashboard">
           <span className="text-amber-500 font-bold text-xl">Admin Panel</span>
         </NavLink>
         <div className="flex items-center gap-5 text-zinc-300">
           <p>Hi! Admin</p>
-          <button className="border border-amber-500 rounded-full text-sm px-4 py-1 text-amber-500 hover:bg-amber-500/10 transition-colors">
+          <button onClick={()=>{handleLogOut()}} className="border cursor-pointer border-amber-500 rounded-full text-sm px-4 py-1 text-amber-500 hover:bg-amber-500/10 transition-colors">
             Logout
           </button>
         </div>
       </div>
 
-      {/* 🟨 Main Layout Section */}
+      {/* Main Layout Section */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <div className="md:w-64 w-16 border-r text-base border-zinc-700 pt-4 flex flex-col bg-zinc-800">

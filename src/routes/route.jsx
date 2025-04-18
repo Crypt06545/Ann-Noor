@@ -45,7 +45,6 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    // Only wrap with AdminRoute here, DashLayout will handle the layout
     element: <PrivateRoute><AdminRoute><DashLayout /></AdminRoute></PrivateRoute>,
     errorElement: <Errorpage />,
     children: [

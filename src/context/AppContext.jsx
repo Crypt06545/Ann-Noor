@@ -31,8 +31,7 @@ export const AppContextProvider = ({ children }) => {
         if (data.data?.cartItems) {
           setCartItems(data.data.cartItems);
         }
-        console.log(data);
-        
+        // console.log(data);
       } else {
         setUser(false);
         setIsAdmin(false);
