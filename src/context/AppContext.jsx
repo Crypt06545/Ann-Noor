@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { dummyProducts } from "../assets/assets";
 import axiosInstance from "../lib/axios";
-
+import { useQuery } from "@tanstack/react-query";
+import { fetchBestSellingProducts } from "../api/Api";
 export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
@@ -20,6 +21,7 @@ export const AppContextProvider = ({ children }) => {
     setProducts(dummyProducts);
   };
 
+  
   // get user
   const fetchUser = async () => {
     try {

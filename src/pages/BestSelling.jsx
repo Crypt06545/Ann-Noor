@@ -1,9 +1,19 @@
 import React from "react";
 import Card from "../components/Card";
-import { useAppContext } from "../context/AppContext";
+import { useQuery } from "@tanstack/react-query";
+import { fetchBestSellingProducts } from "../api/Api";
+
 const BestSelling = () => {
-  const { products } = useAppContext();
-  // console.log(products);
+  const { data: bestSellingData, isLoading, isError } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchBestSellingProducts,
+  });
+
+  // safely access the products
+  const products = bestSellingData?.data?.data || [];
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error fetching products</div>;
 
   return (
     <div className="min-h-screen w-11/12 mx-auto">
@@ -13,7 +23,8 @@ const BestSelling = () => {
         </h1>
 
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
+          {products?.map((product) => (
+            
             <Card
               product={product}
               key={product._id}

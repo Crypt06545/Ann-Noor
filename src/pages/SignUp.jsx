@@ -6,7 +6,6 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useForm } from "react-hook-form";
 import { useAppContext } from "../context/AppContext";
-import { userSignUp } from "../api/Api";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 

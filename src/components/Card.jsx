@@ -3,34 +3,24 @@ import { FaStar, FaRegStar, FaShoppingCart, FaMinus, FaPlus } from "react-icons/
 import { useNavigate } from "react-router-dom";
 
 const Card = ({ id, product }) => {
+  console.log(product);
+
   const { currency, cartItems, addToCart, removeFromCart } = useAppContext();
   const navigate = useNavigate();
 
-  // Calculate discount percentage if offer exists
-  const discountPercentage = product.offerPrice 
-    ? Math.round(((product.price - product.offerPrice) / product.price) * 100)
-    : 0;
-
   return (
-    <div 
+    <div
       onClick={() => {
         navigate(`/about-products/${id}`);
         scrollTo(0, 0);
-      }} 
+      }}
       className="border border-zinc-700 rounded-lg p-4 bg-zinc-800 w-full h-full flex flex-col hover:shadow-md transition-shadow cursor-pointer relative"
     >
-      {/* Discount Badge - Shows only when offerPrice exists */}
-      {product.offerPrice && (
-        <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md z-10">
-          {discountPercentage}% OFF
-        </div>
-      )}
-
       {/* Product Image */}
       <div className="group flex items-center justify-center h-48 md:h-56 lg:h-64 mb-4">
         <img
           className="group-hover:scale-105 transition-transform duration-300 h-full object-contain"
-          src={product.image[0]}
+          src={product.images?.[0] || "https://via.placeholder.com/150"}
           alt={product.name}
         />
       </div>
@@ -41,7 +31,7 @@ const Card = ({ id, product }) => {
         <h3 className="text-zinc-200 font-medium text-lg mt-1 line-clamp-2">
           {product.name}
         </h3>
-        
+
         {/* Price */}
         <div className="flex items-end justify-between mt-auto pt-4">
           <div>
@@ -60,7 +50,7 @@ const Card = ({ id, product }) => {
               </p>
             )}
           </div>
-          
+
           {/* Add to Cart */}
           <div onClick={(e) => e.stopPropagation()} className="text-amber-400">
             {!cartItems[id] ? (
