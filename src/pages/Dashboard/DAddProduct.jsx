@@ -1,10 +1,19 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import axiosInstance from "../../lib/axios";
+import toast from "react-hot-toast";
 
 const DAddProduct = () => {
-  const { register, handleSubmit, reset } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
+
   const [images, setImages] = useState([null, null, null, null]);
   const [imageFiles, setImageFiles] = useState([null, null, null, null]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageChange = (e, index) => {
     const file = e.target.files[0];
@@ -27,20 +36,80 @@ const DAddProduct = () => {
     setImageFiles(newFiles);
   };
 
-  const onSubmit = (data) => {
-    // Convert comma-separated tags and sizes to arrays
-    data.tags = data.tags.split(",").map((tag) => tag.trim());
-    data.sizes = data.sizes.split(",").map((size) => size.trim());
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
 
-    console.log("Form Data:", data);
-    console.log(
-      "Selected Image Files:",
-      imageFiles.filter((img) => img !== null)
-    );
+    try {
+      // Convert comma-separated tags to array
+      data.tags = data.tags
+        ? data.tags.split(",").map((tag) => tag.trim())
+        : [];
+      data.sizes = data.sizes
+        ? data.sizes
+            .split(",")
+            .map((size) => size.trim())
+            .filter((size) => size)
+        : [];
 
-    reset();
-    setImages([null, null, null, null]);
-    setImageFiles([null, null, null, null]);
+      // Create FormData for file upload
+      const formData = new FormData();
+
+      // Append all non-empty image files
+      imageFiles.forEach((file) => {
+        if (file) {
+          formData.append("images", file);
+        }
+      });
+
+      // Append other form data
+      const productData = {
+        name: data.name,
+        brand: data.brand,
+        price: Number(data.price),
+        offerPrice: Number(data.offerPrice),
+        quantity: Number(data.quantity),
+        availability: data.availability,
+        stockStatus: data.stockStatus,
+        category: data.category,
+        sku: data.sku,
+        sizes: data.sizes,
+        tags: data.tags,
+      };
+
+      // Append all fields to FormData
+      Object.keys(productData).forEach((key) => {
+        if (key === "tags" || key === "sizes") {
+          formData.append(key, JSON.stringify(productData[key]));
+        } else {
+          formData.append(key, productData[key]);
+        }
+      });
+
+      // Send the request
+      const response = await axiosInstance.post(
+        "/products/create-product",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      // console.log(response);
+
+      toast.success(response?.data?.message || "Product added successfully!");
+      reset();
+      setImages([null, null, null, null]);
+      setImageFiles([null, null, null, null]);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to add product. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,10 +120,10 @@ const DAddProduct = () => {
         </h2>
 
         <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          {/* Image Upload */}
+          {/* Product Images */}
           <div>
             <label className="block text-amber-500 font-medium mb-2">
-              Product Images
+              Product Images (Max 4) *
             </label>
             <div className="flex flex-wrap gap-4">
               {images.map((img, index) => (
@@ -89,163 +158,236 @@ const DAddProduct = () => {
                 </div>
               ))}
             </div>
+            {imageFiles.every((file) => file === null) && (
+              <p className="text-red-500 text-sm mt-1">
+                At least one image is required
+              </p>
+            )}
           </div>
 
           {/* Product Name */}
           <div>
             <label className="block text-amber-500 mb-1 font-medium">
-              Product Name
+              Product Name *
             </label>
             <input
               type="text"
-              {...register("name", { required: true })}
-              placeholder="e.g. Arabian Oud Supreme"
+              {...register("name", { required: "Product name is required" })}
               className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 outline-none focus:ring-2 focus:ring-amber-500"
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+            )}
           </div>
 
-          {/* Description */}
+          {/* Brand */}
           <div>
             <label className="block text-amber-500 mb-1 font-medium">
-              Product Description
+              Brand *
             </label>
-            <textarea
-              {...register("description")}
-              rows={4}
-              placeholder="Briefly describe the features and benefits of your product."
-              className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 resize-none outline-none focus:ring-2 focus:ring-amber-500"
+            <input
+              type="text"
+              {...register("brand", { required: "Brand is required" })}
+              className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 outline-none focus:ring-2 focus:ring-amber-500"
             />
+            {errors.brand && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.brand.message}
+              </p>
+            )}
           </div>
 
-          {/* SKU, Tags, Sizes */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-amber-500 mb-1 font-medium">
-                SKU
-              </label>
-              <input
-                type="text"
-                {...register("sku")}
-                placeholder="e.g. PERF-1001"
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-            <div>
-              <label className="block text-amber-500 mb-1 font-medium">
-                Tags{" "}
-                <span className="text-xs text-zinc-400">(comma separated)</span>
-              </label>
-              <input
-                type="text"
-                {...register("tags")}
-                placeholder="e.g. Fresh, Long-lasting, Floral"
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-            <div>
-              <label className="block text-amber-500 mb-1 font-medium">
-                Sizes{" "}
-                <span className="text-xs text-zinc-400">(comma separated)</span>
-              </label>
-              <input
-                type="text"
-                {...register("sizes")}
-                placeholder="e.g. 50ml, 100ml, 150ml"
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-          </div>
-
-          {/* Price & Offer Price */}
+          {/* Price Fields */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-amber-500 mb-1 font-medium">
-                Price
+                Price (₹) *
               </label>
               <input
                 type="number"
-                {...register("price", { required: true })}
-                placeholder="e.g. 4500"
+                {...register("price", {
+                  required: "Price is required",
+                  min: { value: 0, message: "Price must be positive" },
+                })}
                 className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
               />
+              {errors.price && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.price.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-amber-500 mb-1 font-medium">
-                Offer Price
+                Offer Price (₹) *
               </label>
               <input
                 type="number"
-                {...register("offerPrice")}
-                placeholder="e.g. 3999"
+                {...register("offerPrice", {
+                  required: "Offer price is required",
+                  min: { value: 0, message: "Offer price must be positive" },
+                })}
                 className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
               />
+              {errors.offerPrice && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.offerPrice.message}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Category & Brand */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-amber-500 mb-1 font-medium">
-                Category
-              </label>
-              <select
-                {...register("category")}
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="">Select</option>
-                <option value="Perfume">Perfume</option>
-                <option value="Oil Perfume">Oil Perfume</option>
-                <option value="Accessories">Accessories</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-amber-500 mb-1 font-medium">
-                Brand
-              </label>
-              <input
-                type="text"
-                {...register("brand")}
-                placeholder="e.g. Oud Arabia"
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
+          {/* Quantity */}
+          <div>
+            <label className="block text-amber-500 mb-1 font-medium">
+              Quantity *
+            </label>
+            <input
+              type="number"
+              {...register("quantity", {
+                required: "Quantity is required",
+                min: { value: 0, message: "Quantity must be positive" },
+              })}
+              className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            {errors.quantity && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.quantity.message}
+              </p>
+            )}
           </div>
 
-          {/* Stock & Availability */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-amber-500 mb-1 font-medium">
-                Stock Status
-              </label>
-              <select
-                {...register("stockStatus")}
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="In Stock">In Stock</option>
-                <option value="Out of Stock">Out of Stock</option>
-                <option value="low in Stock">Low in Stock</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-amber-500 mb-1 font-medium">
-                Availability
-              </label>
-              <input
-                type="text"
-                {...register("availability")}
-                placeholder="e.g. Ships in 1-2 days"
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
+          {/* sizes  */}
+
+          <div>
+            <label className="block text-amber-500 mb-1 font-medium">
+              Sizes (comma separated) *
+            </label>
+            <input
+              type="text"
+              {...register("sizes", {
+                required: "At least one size is required",
+                validate: (value) => {
+                  const sizes = value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter((s) => s);
+                  return sizes.length > 0 || "Please enter at least one size";
+                },
+              })}
+              placeholder="e.g. 50ml, 100ml, XL, L"
+              className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            {errors.sizes && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.sizes.message}
+              </p>
+            )}
+          </div>
+
+          {/* SKU */}
+          <div>
+            <label className="block text-amber-500 mb-1 font-medium">
+              SKU (Stock Keeping Unit) *
+            </label>
+            <input
+              type="text"
+              {...register("sku", { required: "SKU is required" })}
+              className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            {errors.sku && (
+              <p className="text-red-500 text-sm mt-1">{errors.sku.message}</p>
+            )}
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-amber-500 mb-1 font-medium">
+              Category *
+            </label>
+            <select
+              {...register("category", { required: "Category is required" })}
+              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">Select Category</option>
+              <option value="Perfume">Perfume</option>
+              <option value="Oil Perfume">Oil Perfume</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+            {errors.category && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.category.message}
+              </p>
+            )}
+          </div>
+
+          {/* Stock Status */}
+          <div>
+            <label className="block text-amber-500 mb-1 font-medium">
+              Stock Status *
+            </label>
+            <select
+              {...register("stockStatus", {
+                required: "Stock status is required",
+              })}
+              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="inStock">In Stock</option>
+              <option value="outOfStock">Out of Stock</option>
+              <option value="lowStock">Low in Stock</option>
+            </select>
+            {errors.stockStatus && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.stockStatus.message}
+              </p>
+            )}
+          </div>
+
+          {/* Availability */}
+          <div>
+            <label className="block text-amber-500 mb-1 font-medium">
+              Availability *
+            </label>
+            <input
+              type="text"
+              {...register("availability", {
+                required: "Availability is required",
+              })}
+              placeholder="e.g. Ships in 1-2 days"
+              className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            {errors.availability && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.availability.message}
+              </p>
+            )}
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="block text-amber-500 mb-1 font-medium">
+              Tags (comma separated)
+            </label>
+            <input
+              type="text"
+              {...register("tags")}
+              placeholder="e.g. premium, luxury, summer"
+              className="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600 outline-none focus:ring-2 focus:ring-amber-500"
+            />
           </div>
 
           {/* Submit Button */}
           <div className="pt-4">
             <button
               type="submit"
-              className="bg-amber-500 hover:bg-amber-600 text-zinc-900 font-semibold px-6 py-2 rounded shadow-md transition"
+              disabled={
+                isSubmitting || imageFiles.every((file) => file === null)
+              }
+              className={`bg-amber-500 hover:bg-amber-600 text-zinc-900 font-semibold px-6 py-2 rounded shadow-md transition ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Add Product
+              {isSubmitting ? "Adding..." : "Add Product"}
             </button>
           </div>
         </form>
