@@ -14,7 +14,8 @@ import ManageProducts from "../pages/Dashboard/ManageProducts";
 import Orders from "../pages/Dashboard/Orders";
 import Users from "../pages/Dashboard/Users";
 import { createBrowserRouter } from "react-router-dom";
-import { AdminRoute, PrivateRoute, } from "./ProtectedRoute";
+import { AdminRoute, PrivateRoute } from "./ProtectedRoute";
+import AddProduct from "../pages/Dashboard/AddProduct";
 
 const router = createBrowserRouter([
   {
@@ -45,11 +46,18 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <PrivateRoute><AdminRoute><DashLayout /></AdminRoute></PrivateRoute>,
+    element: (
+      <PrivateRoute>
+        <AdminRoute>
+          <DashLayout />
+        </AdminRoute>
+      </PrivateRoute>
+    ),
     errorElement: <Errorpage />,
     children: [
       { path: "/dashboard", element: <Statics /> },
-      { path: "/dashboard/add-product", element: <DAddProduct /> },
+      // { path: "/dashboard/add-product", element: <DAddProduct /> },
+      { path: "/dashboard/add-product", element: <AddProduct /> },
       { path: "/dashboard/orders", element: <Orders /> },
       { path: "/dashboard/manage-products", element: <ManageProducts /> },
       { path: "/dashboard/users", element: <Users /> },

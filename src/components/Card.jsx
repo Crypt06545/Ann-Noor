@@ -12,6 +12,7 @@ const Card = ({ id, product }) => {
     <div
       onClick={() => {
         navigate(`/about-products/${id}`);
+        // navigate(`/about-products`);
         scrollTo(0, 0);
       }}
       className="border border-zinc-700 rounded-lg p-4 bg-zinc-800 w-full h-full flex flex-col hover:shadow-md transition-shadow cursor-pointer relative"
