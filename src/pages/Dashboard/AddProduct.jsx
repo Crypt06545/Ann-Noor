@@ -1,35 +1,45 @@
 import { useForm } from "react-hook-form";
 import { WithContext as ReactTags } from "react-tag-input";
+import axiosInstance from "../../lib/axios";
+import toast from "react-hot-toast";
+import { useAppContext } from "../../context/AppContext";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
 
 export default function AddProduct() {
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
       productName: "",
       price: "",
+      offerPrice: "",
       quantity: "",
       category: "",
+      stockStatus: "",
       sizes: [],
       tags: [],
+      slu:'',
       images: [null, null, null, null],
     },
   });
+
+  const {loading,setLoading} = useAppContext()
+
   const images = watch("images") || [];
+  const sizes = watch("sizes") || [];
+  const tags = watch("tags") || [];
 
   const handleImageChange = (e, index) => {
     const file = e.target.files[0];
     const updated = [...images];
-    updated[index] = file; // Set selected image
+    updated[index] = file;
     setValue("images", updated, { shouldValidate: true });
   };
 
   const handleRemoveImage = (index) => {
     const updated = [...images];
-    updated[index] = null; // Reset image to null (remove)
+    updated[index] = null;
     setValue("images", updated, { shouldValidate: true });
   };
-
-  const sizes = watch("sizes") || [];
-  const tags = watch("tags") || [];
 
   const handleAddSize = (tag) => {
     const updated = [...sizes, tag];
@@ -40,9 +50,7 @@ export default function AddProduct() {
     setValue(
       "sizes",
       sizes.filter((_, i) => i !== index),
-      {
-        shouldValidate: true,
-      }
+      { shouldValidate: true }
     );
   };
 
@@ -55,29 +63,68 @@ export default function AddProduct() {
     setValue(
       "tags",
       tags.filter((_, i) => i !== index),
-      {
-        shouldValidate: true,
-      }
+      { shouldValidate: true }
     );
   };
 
-  const onSubmit = (data) => {
-    console.log("Form submitted:", {
-      ...data,
-      sizes: data.sizes.map((tag) => tag.text),
-      tags: data.tags.map((tag) => tag.text),
-      images: data.images,
-    });
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true)
+      const formData = new FormData();
+      
+      // Append basic fields
+      formData.append("name", data.productName);
+      formData.append("price", data.price);
+      formData.append("offerPrice", data.offerPrice || data.price);
+      formData.append("quantity", data.quantity);
+      formData.append("category", data.category);
+      formData.append("sku", data.sku);
+      formData.append("stockStatus", data.stockStatus);
+      
+      // Append sizes and tags as arrays
+      data.sizes.forEach((size) => {
+        formData.append("sizes", size.text);
+      });
+      
+      data.tags.forEach((tag) => {
+        formData.append("tags", tag.text);
+      });
+      
+      // Append images (only non-null ones)
+      data.images.forEach((image) => {
+        if (image) {
+          formData.append("images", image);
+        }
+      });
 
-    reset({
-      productName: "",
-      price: "",
-      quantity: "",
-      category: "",
-      sizes: [],
-      tags: [],
-      images: [null, null, null, null],
-    });
+      const response = await axiosInstance.post("/products/create-product", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("Product created:", response);
+      
+      reset({
+        productName: "",
+        price: "",
+        offerPrice: "",
+        quantity: "",
+        category: "",
+        stockStatus: "",
+        sizes: [],
+        tags: [],
+        sku:'',
+        images: [null, null, null, null],
+      });
+
+      toast.success(response.data.message || "Product added successfully!");
+
+    } catch (error) {
+      setLoading(false)
+      // console.error("Error:", error.response?.data || error.message);
+      toast.error(`${error.response?.data?.message || error.message ||'Somethig Went Wrong!!'}`);
+    }
   };
 
   return (
@@ -87,83 +134,77 @@ export default function AddProduct() {
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* images field  */}
+        {/* Images Section */}
         <div>
           <label className="block mb-2 text-sm font-medium text-zinc-300">
-            Product Images
+            Product Images (Max 4)
           </label>
           <div className="flex flex-wrap items-center gap-3">
-            {Array(4)
-              .fill("")
-              .map((_, index) => (
-                <div key={index} className="relative">
-                  <label htmlFor={`image${index}`}>
-                    <input
-                      accept="image/*"
-                      type="file"
-                      id={`image${index}`}
-                      hidden
-                      onChange={(e) => handleImageChange(e, index)}
-                    />
-                    <img
-                      className="max-w-24 cursor-pointer border border-zinc-600 rounded-md"
-                      src={
-                        images[index]
-                          ? URL.createObjectURL(images[index]) // Preview selected image
-                          : "https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/e-commerce/uploadArea.png" // Default image if not selected
-                      }
-                      alt="uploadArea"
-                      width={100}
-                      height={100}
-                    />
-                  </label>
-
-                  {images[index] && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)} // Remove image when clicked
-                      className="absolute top-0 right-0 text-red-500 bg-white rounded-full p-1"
-                    >
-                      <span className="text-xl">×</span> {/* Close icon */}
-                    </button>
-                  )}
-                </div>
-              ))}
+            {images.map((image, index) => (
+              <div key={index} className="relative">
+                <label htmlFor={`image-${index}`} className="cursor-pointer">
+                  <input
+                    id={`image-${index}`}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageChange(e, index)}
+                    className="hidden"
+                  />
+                  <div className="w-24 h-24 border-2 border-dashed border-zinc-600 rounded-md flex items-center justify-center overflow-hidden">
+                    {image ? (
+                      <img 
+                        src={URL.createObjectURL(image)} 
+                        alt={`Preview ${index}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-zinc-500 text-center p-2">
+                        <span className="block text-3xl">+</span>
+                        <span className="text-xs">Add Image</span>
+                      </div>
+                    )}
+                  </div>
+                </label>
+                {image && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* price offerprce  */}
+        {/* Product Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Product Name */}
           <div>
             <label className="block mb-2 text-sm font-medium text-zinc-300">
-              Product Name
+              Product Name *
             </label>
             <input
-              {...register("productName")}
-              placeholder="Enter product name"
+              {...register("productName", { required: true })}
               className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              placeholder="Enter product name"
             />
           </div>
 
-          {/* Price */}
-          {/* Price, Offer Price, Quantity in one row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Price */}
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block mb-2 text-sm font-medium text-zinc-300">
-                Price
+                Price *
               </label>
               <input
                 type="number"
                 step="0.01"
-                {...register("price")}
-                placeholder="Enter price"
+                {...register("price", { required: true })}
                 className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="0.00"
               />
             </div>
-
-            {/* Offer Price */}
             <div>
               <label className="block mb-2 text-sm font-medium text-zinc-300">
                 Offer Price
@@ -172,25 +213,23 @@ export default function AddProduct() {
                 type="number"
                 step="0.01"
                 {...register("offerPrice")}
-                placeholder="offer price"
                 className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="0.00"
               />
             </div>
- 
-            {/* Quantity */}
             <div>
               <label className="block mb-2 text-sm font-medium text-zinc-300">
-                Quantity
+                Quantity *
               </label>
               <input
                 type="number"
-                {...register("quantity")}
-                placeholder="Enter quantity"
+                {...register("quantity", { required: true })}
                 className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="0"
               />
             </div>
           </div>
-          {/* Category */}
+
           <div>
             <label className="block mb-2 text-sm font-medium text-zinc-300">
               Category *
@@ -198,7 +237,6 @@ export default function AddProduct() {
             <select
               {...register("category", { required: true })}
               className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              defaultValue=""
             >
               <option value="">Select Category</option>
               <option value="Perfume">Perfume</option>
@@ -206,29 +244,25 @@ export default function AddProduct() {
               <option value="Accessories">Accessories</option>
             </select>
           </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-medium text-zinc-300">
+              Stock Status *
+            </label>
+            <select
+              {...register("stockStatus", { required: true })}
+              className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">Select Status</option>
+              <option value="inStock">In Stock</option>
+              <option value="outOfStock">Out of Stock</option>
+              <option value="lowStock">Low Stock</option>
+            </select>
+          </div>
         </div>
 
-        {/* Stock Status */}
-        <div>
-          <label className="block mb-2 text-sm font-medium text-zinc-300">
-            Stock Status *
-          </label>
-          <select
-            {...register("stockStatus", { required: true })}
-            className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Select Stock Status
-            </option>
-            <option value="inStock">In Stock</option>
-            <option value="outOfStock">Out of Stock</option>
-            <option value="lowStock">Low in Stock</option>
-          </select>
-        </div>
-        {/* Sizes */}
+        {/* Sizes and Tags */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Sizes */}
           <div>
             <label className="block mb-2 text-sm font-medium text-zinc-300">
               Sizes
@@ -237,7 +271,7 @@ export default function AddProduct() {
               tags={sizes}
               handleDelete={handleRemoveSize}
               handleAddition={handleAddSize}
-              placeholder="Add sizes (e.g., M, L, XL)"
+              placeholder="Add sizes (e.g., S, M, L)"
               inputFieldPosition="bottom"
               classNames={{
                 tags: "react-tags",
@@ -251,7 +285,6 @@ export default function AddProduct() {
             />
           </div>
 
-          {/* Tags */}
           <div>
             <label className="block mb-2 text-sm font-medium text-zinc-300">
               Tags
@@ -260,7 +293,7 @@ export default function AddProduct() {
               tags={tags}
               handleDelete={handleRemoveTag}
               handleAddition={handleAddTag}
-              placeholder="Add product tags"
+              placeholder="Add tags (e.g., summer, luxury)"
               inputFieldPosition="bottom"
               classNames={{
                 tags: "react-tags",
@@ -275,13 +308,30 @@ export default function AddProduct() {
           </div>
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200"
-        >
-          Submit Product
-        </button>
+        
+          {/* SKU */}
+          <div>
+            <label className="block text-zinc-300 text-sm mb-1 font-medium">
+              SKU
+            </label>
+            <input
+              type="text"
+              {...register("sku", { required: "SKU is required" })}
+              className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            placeholder="VAM-OIL-003"
+            />
+          </div>
+
+          <button
+        type="submit"
+        className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={loading}
+      >
+        {loading && (
+          <AiOutlineLoading3Quarters className="animate-spin text-xl" />
+        )}
+        {loading ? "Adding..." : "Add Product"}
+      </button>
       </form>
     </div>
   );
