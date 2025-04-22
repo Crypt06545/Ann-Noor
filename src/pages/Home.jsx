@@ -1,7 +1,6 @@
 import React from 'react'
 import Hero from '../components/Hero'
 import BestSelling from './BestSelling'
-import DAddProduct from './Dashboard/DAddProduct'
 import ProductDetails from './ProductDetails'
 import AddProduct from './Dashboard/AddProduct'
 

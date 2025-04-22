@@ -2,11 +2,12 @@ import { useForm } from "react-hook-form";
 import { WithContext as ReactTags } from "react-tag-input";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { useAppContext } from "../../context/AppContext";
+
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { useAppContext } from "../../context/AppContext";
 
 
-export default function AddProduct() {
+export default function updateProduct() {
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
       productName: "",
@@ -17,7 +18,7 @@ export default function AddProduct() {
       stockStatus: "",
       sizes: [],
       tags: [],
-      sku:'',
+      slu:'',
       images: [null, null, null, null],
     },
   });
@@ -97,13 +98,13 @@ export default function AddProduct() {
         }
       });
 
-      const response = await axiosInstance.post("/products/create-product", formData, {
+      const response = await axiosInstance.put("/products/create-product", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      console.log("Product created:", response);
+      console.log("Product updated:", response);
       
       reset({
         productName: "",

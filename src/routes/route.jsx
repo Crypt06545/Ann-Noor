@@ -8,7 +8,6 @@ import ShippingAddress from "../pages/ShippingAddress";
 import MyOrders from "../pages/MyOrders";
 import SignIn from "../pages/SignIn";
 import SignUp from "../pages/SignUp";
-import DAddProduct from "../pages/Dashboard/DAddProduct";
 import Statics from "../pages/Dashboard/Statics";
 import ManageProducts from "../pages/Dashboard/ManageProducts";
 import Orders from "../pages/Dashboard/Orders";
@@ -56,10 +55,10 @@ const router = createBrowserRouter([
     errorElement: <Errorpage />,
     children: [
       { path: "/dashboard", element: <Statics /> },
-      // { path: "/dashboard/add-product", element: <DAddProduct /> },
       { path: "/dashboard/add-product", element: <AddProduct /> },
       { path: "/dashboard/orders", element: <Orders /> },
       { path: "/dashboard/manage-products", element: <ManageProducts /> },
+      { path: "/dashboard/manage-products/update-product/:id", element: <ManageProducts /> },
       { path: "/dashboard/users", element: <Users /> },
     ],
   },

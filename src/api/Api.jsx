@@ -14,6 +14,7 @@ export const fetchBestSellingProducts = async () => {
   }
 };
 
+// single product details 
 export const producDetails = async (id) => {
   try {
     const response = await axiosInstance.get(`/products/product-details/${id}`);
@@ -23,3 +24,13 @@ export const producDetails = async (id) => {
     console.log(error);
   }
 };
+
+export const updateProdut= async(id) =>{
+  try {
+    const response = await axiosInstance.put(`/products/update-product/${id}`)
+    return response
+  } catch (error) {
+    console.log(error);
+    
+  }
+}
