@@ -5,10 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchBestSellingProducts } from "../../api/Api";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { useAppContext } from "../../context/AppContext";
-
+import axiosInstance from "../../lib/axios";
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 const PRODUCTS_PER_PAGE = 10;
 
 const ManageProducts = () => {
+  const navigate = useNavigate()
   const { currency } = useAppContext();
   const {
     data: mProducts,
@@ -49,6 +53,41 @@ const ManageProducts = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+
+  // hadle delete
+  const handleProductDelete = async (id) => {
+    try {
+      // Show confirmation dialog first
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      });
+
+      // Only proceed if user confirmed
+      if (result.isConfirmed) {
+        const response = await axiosInstance.delete(
+          `/products/delete-product/${id}`
+        );
+        // console.log(response);
+        toast.success(response?.data?.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "Failed to delete product");
+    }
+  };
+
+  // handle Edit
+  const handleProductEdit = async(id)=>{
+    console.log(id);
+    navigate(`/update-product/${id}`)
+    
+  }
 
   return (
     <div className="min-h-screen bg-zinc-900">
@@ -108,12 +147,18 @@ const ManageProducts = () => {
                   <td className="py-3 px-4">
                     <div className="flex justify-center space-x-3">
                       <button
+                        onClick={() => {
+                          handleProductEdit(product?._id);
+                        }}
                         className="cursor-pointer p-2 text-green-500 hover:text-green-400 hover:bg-zinc-700 rounded-full transition-colors"
                         aria-label="Edit product"
                       >
                         <FaEdit className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => {
+                          handleProductDelete(product?._id);
+                        }}
                         className="cursor-pointer p-2 text-red-500 hover:text-red-400 hover:bg-zinc-700 rounded-full transition-colors"
                         aria-label="Delete product"
                       >
