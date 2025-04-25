@@ -2,12 +2,22 @@ import { useForm } from "react-hook-form";
 import { WithContext as ReactTags } from "react-tag-input";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useAppContext } from "../../context/AppContext";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { producDetails } from "../../api/Api";
+import { useEffect } from "react";
 
+export default function UpdateProduct() {
+  const { id } = useParams();
+  const { loading, setLoading } = useAppContext();
 
-export default function updateProduct() {
+  const { data: productData, isLoading } = useQuery({
+    queryKey: ["products", id],
+    queryFn: () => producDetails(id),
+  });
+
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
       productName: "",
@@ -18,16 +28,34 @@ export default function updateProduct() {
       stockStatus: "",
       sizes: [],
       tags: [],
-      slu:'',
+      sku: "",
       images: [null, null, null, null],
     },
   });
 
-  const {loading,setLoading} = useAppContext()
-
   const images = watch("images") || [];
   const sizes = watch("sizes") || [];
   const tags = watch("tags") || [];
+
+  // Reset form with product data when it's loaded
+  useEffect(() => {
+    if (productData?.data?.data) {
+      const product = productData.data.data;
+      reset({
+        productName: product.name || "",
+        price: product.price || "",
+        offerPrice: product.offerPrice || "",
+        quantity: product.quantity || "",
+        category: product.category || "",
+        stockStatus: product.stockStatus || "",
+        sizes: product.sizes?.map(size => ({ id: size, text: size })) || [],
+        tags: product.tags?.map(tag => ({ id: tag, text: tag })) || [],
+        sku: product.sku || "",
+        // Note: For images, you'll need to handle them differently as they might be URLs
+        images: product.images ? [...product.images, null, null, null, null].slice(0, 4) : [null, null, null, null]
+      });
+    }
+  }, [productData, reset]);
 
   const handleImageChange = (e, index) => {
     const file = e.target.files[0];
@@ -70,9 +98,9 @@ export default function updateProduct() {
 
   const onSubmit = async (data) => {
     try {
-      setLoading(true)
+      setLoading(true);
       const formData = new FormData();
-      
+
       // Append basic fields
       formData.append("name", data.productName);
       formData.append("price", data.price);
@@ -81,16 +109,16 @@ export default function updateProduct() {
       formData.append("category", data.category);
       formData.append("sku", data.sku);
       formData.append("stockStatus", data.stockStatus);
-      
+
       // Append sizes and tags as arrays
       data.sizes.forEach((size) => {
         formData.append("sizes", size.text);
       });
-      
+
       data.tags.forEach((tag) => {
         formData.append("tags", tag.text);
       });
-      
+
       // Append images (only non-null ones)
       data.images.forEach((image) => {
         if (image) {
@@ -98,40 +126,39 @@ export default function updateProduct() {
         }
       });
 
-      const response = await axiosInstance.put("/products/create-product", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      // Change the endpoint to update instead of create
+      const response = await axiosInstance.put(
+        `/products/update-product/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       console.log("Product updated:", response);
-      
-      reset({
-        productName: "",
-        price: "",
-        offerPrice: "",
-        quantity: "",
-        category: "",
-        stockStatus: "",
-        sizes: [],
-        tags: [],
-        sku:'',
-        images: [null, null, null, null],
-      });
-
-      toast.success(response.data.message || "Product added successfully!");
-
+      toast.success(response.data.message || "Product updated successfully!");
     } catch (error) {
-      setLoading(false)
-      // console.error("Error:", error.response?.data || error.message);
-      toast.error(`${error.response?.data?.message || error.message ||'Somethig Went Wrong!!'}`);
+      setLoading(false);
+      toast.error(
+        `${
+          error.response?.data?.message ||
+          error.message ||
+          "Something Went Wrong!!"
+        }`
+      );
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (isLoading) return <div className="text-center py-10">Loading product details...</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-8 mt-10 bg-zinc-900 border border-zinc-700 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold text-amber-500 mb-6 text-center">
-        Add New Product
+        Update Product
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -153,11 +180,19 @@ export default function updateProduct() {
                   />
                   <div className="w-24 h-24 border-2 border-dashed border-zinc-600 rounded-md flex items-center justify-center overflow-hidden">
                     {image ? (
-                      <img 
-                        src={URL.createObjectURL(image)} 
-                        alt={`Preview ${index}`}
-                        className="w-full h-full object-cover"
-                      />
+                      typeof image === 'string' ? (
+                        <img
+                          src={image}
+                          alt={`Preview ${index}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`Preview ${index}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )
                     ) : (
                       <div className="text-zinc-500 text-center p-2">
                         <span className="block text-3xl">+</span>
@@ -309,30 +344,29 @@ export default function updateProduct() {
           </div>
         </div>
 
-        
-          {/* SKU */}
-          <div>
-            <label className="block text-zinc-300 text-sm mb-1 font-medium">
-              SKU
-            </label>
-            <input
-              type="text"
-              {...register("sku", { required: "SKU is required" })}
-              className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        {/* SKU */}
+        <div>
+          <label className="block text-zinc-300 text-sm mb-1 font-medium">
+            SKU
+          </label>
+          <input
+            type="text"
+            {...register("sku", { required: "SKU is required" })}
+            className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="VAM-OIL-003"
-            />
-          </div>
+          />
+        </div>
 
-          <button
-        type="submit"
-        className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-        disabled={loading}
-      >
-        {loading && (
-          <AiOutlineLoading3Quarters className="animate-spin text-xl" />
-        )}
-        {loading ? "Adding..." : "Add Product"}
-      </button>
+        <button
+          type="submit"
+          className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={loading}
+        >
+          {loading && (
+            <AiOutlineLoading3Quarters className="animate-spin text-xl" />
+          )}
+          {loading ? "Updating..." : "Update Product"}
+        </button>
       </form>
     </div>
   );

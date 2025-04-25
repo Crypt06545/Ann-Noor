@@ -15,6 +15,7 @@ import Users from "../pages/Dashboard/Users";
 import { createBrowserRouter } from "react-router-dom";
 import { AdminRoute, PrivateRoute } from "./ProtectedRoute";
 import AddProduct from "../pages/Dashboard/AddProduct";
+import UpdateProduct from "../pages/Dashboard/UpdateProduct";
 
 const router = createBrowserRouter([
   {
@@ -58,7 +59,7 @@ const router = createBrowserRouter([
       { path: "/dashboard/add-product", element: <AddProduct /> },
       { path: "/dashboard/orders", element: <Orders /> },
       { path: "/dashboard/manage-products", element: <ManageProducts /> },
-      { path: "/dashboard/manage-products/update-product/:id", element: <ManageProducts /> },
+      { path: "/dashboard/update-product/:id", element: <UpdateProduct /> },
       { path: "/dashboard/users", element: <Users /> },
     ],
   },

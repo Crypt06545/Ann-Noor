@@ -85,7 +85,7 @@ const ManageProducts = () => {
   // handle Edit
   const handleProductEdit = async(id)=>{
     console.log(id);
-    navigate(`/update-product/${id}`)
+    navigate(`/dashboard/update-product/${id}`)
     
   }
 
