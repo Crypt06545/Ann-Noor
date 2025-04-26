@@ -1,159 +1,59 @@
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { WithContext as ReactTags } from "react-tag-input";
-import axiosInstance from "../../lib/axios";
-import toast from "react-hot-toast";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { useAppContext } from "../../context/AppContext";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { producDetails } from "../../api/Api";
-import { useEffect } from "react";
 
 export default function UpdateProduct() {
-  const { id } = useParams();
-  const { loading, setLoading } = useAppContext();
-
-  const { data: productData, isLoading } = useQuery({
-    queryKey: ["products", id],
-    queryFn: () => producDetails(id),
+  const [formData, setFormData] = useState({
+    productName: "",
+    price: "",
+    offerPrice: "",
+    quantity: "",
+    category: "",
+    stockStatus: "",
+    sizes: [],
+    tags: [],
+    sku: "",
   });
 
-  const { register, handleSubmit, setValue, watch, reset } = useForm({
-    defaultValues: {
-      productName: "",
-      price: "",
-      offerPrice: "",
-      quantity: "",
-      category: "",
-      stockStatus: "",
-      sizes: [],
-      tags: [],
-      sku: "",
-      images: [null, null, null, null],
-    },
-  });
-
-  const images = watch("images") || [];
-  const sizes = watch("sizes") || [];
-  const tags = watch("tags") || [];
-
-  // Reset form with product data when it's loaded
-  useEffect(() => {
-    if (productData?.data?.data) {
-      const product = productData.data.data;
-      reset({
-        productName: product.name || "",
-        price: product.price || "",
-        offerPrice: product.offerPrice || "",
-        quantity: product.quantity || "",
-        category: product.category || "",
-        stockStatus: product.stockStatus || "",
-        sizes: product.sizes?.map(size => ({ id: size, text: size })) || [],
-        tags: product.tags?.map(tag => ({ id: tag, text: tag })) || [],
-        sku: product.sku || "",
-        // Note: For images, you'll need to handle them differently as they might be URLs
-        images: product.images ? [...product.images, null, null, null, null].slice(0, 4) : [null, null, null, null]
-      });
-    }
-  }, [productData, reset]);
-
-  const handleImageChange = (e, index) => {
-    const file = e.target.files[0];
-    const updated = [...images];
-    updated[index] = file;
-    setValue("images", updated, { shouldValidate: true });
-  };
-
-  const handleRemoveImage = (index) => {
-    const updated = [...images];
-    updated[index] = null;
-    setValue("images", updated, { shouldValidate: true });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleAddSize = (tag) => {
-    const updated = [...sizes, tag];
-    setValue("sizes", updated, { shouldValidate: true });
+    setFormData(prev => ({
+      ...prev,
+      sizes: [...prev.sizes, tag]
+    }));
   };
 
   const handleRemoveSize = (index) => {
-    setValue(
-      "sizes",
-      sizes.filter((_, i) => i !== index),
-      { shouldValidate: true }
-    );
+    setFormData(prev => ({
+      ...prev,
+      sizes: prev.sizes.filter((_, i) => i !== index)
+    }));
   };
 
   const handleAddTag = (tag) => {
-    const updated = [...tags, tag];
-    setValue("tags", updated, { shouldValidate: true });
+    setFormData(prev => ({
+      ...prev,
+      tags: [...prev.tags, tag]
+    }));
   };
 
   const handleRemoveTag = (index) => {
-    setValue(
-      "tags",
-      tags.filter((_, i) => i !== index),
-      { shouldValidate: true }
-    );
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index)
+    }));
   };
 
-  const onSubmit = async (data) => {
-    try {
-      setLoading(true);
-      const formData = new FormData();
-
-      // Append basic fields
-      formData.append("name", data.productName);
-      formData.append("price", data.price);
-      formData.append("offerPrice", data.offerPrice || data.price);
-      formData.append("quantity", data.quantity);
-      formData.append("category", data.category);
-      formData.append("sku", data.sku);
-      formData.append("stockStatus", data.stockStatus);
-
-      // Append sizes and tags as arrays
-      data.sizes.forEach((size) => {
-        formData.append("sizes", size.text);
-      });
-
-      data.tags.forEach((tag) => {
-        formData.append("tags", tag.text);
-      });
-
-      // Append images (only non-null ones)
-      data.images.forEach((image) => {
-        if (image) {
-          formData.append("images", image);
-        }
-      });
-
-      // Change the endpoint to update instead of create
-      const response = await axiosInstance.put(
-        `/products/update-product/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      console.log("Product updated:", response);
-      toast.success(response.data.message || "Product updated successfully!");
-    } catch (error) {
-      setLoading(false);
-      toast.error(
-        `${
-          error.response?.data?.message ||
-          error.message ||
-          "Something Went Wrong!!"
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
   };
-
-  if (isLoading) return <div className="text-center py-10">Loading product details...</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-8 mt-10 bg-zinc-900 border border-zinc-700 rounded-xl shadow-md">
@@ -161,68 +61,17 @@ export default function UpdateProduct() {
         Update Product
       </h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Images Section */}
-        <div>
-          <label className="block mb-2 text-sm font-medium text-zinc-300">
-            Product Images (Max 4)
-          </label>
-          <div className="flex flex-wrap items-center gap-3">
-            {images.map((image, index) => (
-              <div key={index} className="relative">
-                <label htmlFor={`image-${index}`} className="cursor-pointer">
-                  <input
-                    id={`image-${index}`}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(e, index)}
-                    className="hidden"
-                  />
-                  <div className="w-24 h-24 border-2 border-dashed border-zinc-600 rounded-md flex items-center justify-center overflow-hidden">
-                    {image ? (
-                      typeof image === 'string' ? (
-                        <img
-                          src={image}
-                          alt={`Preview ${index}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <img
-                          src={URL.createObjectURL(image)}
-                          alt={`Preview ${index}`}
-                          className="w-full h-full object-cover"
-                        />
-                      )
-                    ) : (
-                      <div className="text-zinc-500 text-center p-2">
-                        <span className="block text-3xl">+</span>
-                        <span className="text-xs">Add Image</span>
-                      </div>
-                    )}
-                  </div>
-                </label>
-                {image && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Product Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block mb-2 text-sm font-medium text-zinc-300">
-              Product Name *
+              Product Name
             </label>
             <input
-              {...register("productName", { required: true })}
+              name="productName"
+              value={formData.productName}
+              onChange={handleInputChange}
               className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="Enter product name"
             />
@@ -231,12 +80,14 @@ export default function UpdateProduct() {
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block mb-2 text-sm font-medium text-zinc-300">
-                Price *
+                Price
               </label>
               <input
                 type="number"
                 step="0.01"
-                {...register("price", { required: true })}
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
                 className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 placeholder="0.00"
               />
@@ -248,18 +99,22 @@ export default function UpdateProduct() {
               <input
                 type="number"
                 step="0.01"
-                {...register("offerPrice")}
+                name="offerPrice"
+                value={formData.offerPrice}
+                onChange={handleInputChange}
                 className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 placeholder="0.00"
               />
             </div>
             <div>
               <label className="block mb-2 text-sm font-medium text-zinc-300">
-                Quantity *
+                Quantity
               </label>
               <input
                 type="number"
-                {...register("quantity", { required: true })}
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleInputChange}
                 className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 placeholder="0"
               />
@@ -268,10 +123,12 @@ export default function UpdateProduct() {
 
           <div>
             <label className="block mb-2 text-sm font-medium text-zinc-300">
-              Category *
+              Category
             </label>
             <select
-              {...register("category", { required: true })}
+              name="category"
+              value={formData.category}
+              onChange={handleInputChange}
               className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
             >
               <option value="">Select Category</option>
@@ -283,10 +140,12 @@ export default function UpdateProduct() {
 
           <div>
             <label className="block mb-2 text-sm font-medium text-zinc-300">
-              Stock Status *
+              Stock Status
             </label>
             <select
-              {...register("stockStatus", { required: true })}
+              name="stockStatus"
+              value={formData.stockStatus}
+              onChange={handleInputChange}
               className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
             >
               <option value="">Select Status</option>
@@ -304,7 +163,7 @@ export default function UpdateProduct() {
               Sizes
             </label>
             <ReactTags
-              tags={sizes}
+              tags={formData.sizes}
               handleDelete={handleRemoveSize}
               handleAddition={handleAddSize}
               placeholder="Add sizes (e.g., S, M, L)"
@@ -326,7 +185,7 @@ export default function UpdateProduct() {
               Tags
             </label>
             <ReactTags
-              tags={tags}
+              tags={formData.tags}
               handleDelete={handleRemoveTag}
               handleAddition={handleAddTag}
               placeholder="Add tags (e.g., summer, luxury)"
@@ -351,7 +210,9 @@ export default function UpdateProduct() {
           </label>
           <input
             type="text"
-            {...register("sku", { required: "SKU is required" })}
+            name="sku"
+            value={formData.sku}
+            onChange={handleInputChange}
             className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="VAM-OIL-003"
           />
@@ -359,13 +220,9 @@ export default function UpdateProduct() {
 
         <button
           type="submit"
-          className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-          disabled={loading}
+          className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200"
         >
-          {loading && (
-            <AiOutlineLoading3Quarters className="animate-spin text-xl" />
-          )}
-          {loading ? "Updating..." : "Update Product"}
+          Update Product
         </button>
       </form>
     </div>
