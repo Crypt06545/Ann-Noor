@@ -25,10 +25,11 @@ export const producDetails = async (id) => {
   }
 };
 
-export const updateProdut= async(id) =>{
+// get all users 
+export const getAllUsers = async()=>{
   try {
-    const response = await axiosInstance.put(`/products/update-product/${id}`)
-    return response
+    const response = await axiosInstance.get('/users/all-users')
+    return response.data
   } catch (error) {
     console.log(error);
     

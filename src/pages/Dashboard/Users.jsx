@@ -1,31 +1,24 @@
 import React, { useState } from 'react';
 import { FaEdit, FaCheck, FaTimes, FaUserShield, FaUser, FaUserTie, FaTrash } from 'react-icons/fa';
-import Pagination from '../../components/Pagination'; // Adjust the import path as needed
+import Pagination from '../../components/Pagination';
+import { useQuery } from '@tanstack/react-query';
+import { getAllUsers } from '../../api/Api';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 const Users = () => {
-  // Sample user data
-  const allUsers = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'admin' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'user' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'moderator' },
-    { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'user' },
-    { id: 5, name: 'Charlie Wilson', email: 'charlie@example.com', role: 'user' },
-    { id: 6, name: 'David Lee', email: 'david@example.com', role: 'user' },
-    { id: 7, name: 'Eva Garcia', email: 'eva@example.com', role: 'user' },
-    { id: 8, name: 'Frank Miller', email: 'frank@example.com', role: 'user' },
-    { id: 9, name: 'Grace Davis', email: 'grace@example.com', role: 'user' },
-    { id: 10, name: 'Henry Wilson', email: 'henry@example.com', role: 'user' },
-    { id: 11, name: 'Ivy Taylor', email: 'ivy@example.com', role: 'user' },
-    { id: 12, name: 'Jack Anderson', email: 'jack@example.com', role: 'user' },
-    { id: 13, name: 'Karen Thomas', email: 'karen@example.com', role: 'user' },
-  ];
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["users"],
+    queryFn: getAllUsers,
+  });
 
+  const allUsers = data?.data || []; 
+  
   const USERS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState(null);
-  const [tempRole, setTempRole] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
 
-  // Calculate pagination
+  // Calculate pagination safely
   const totalPages = Math.ceil(allUsers.length / USERS_PER_PAGE);
   const indexOfLastUser = currentPage * USERS_PER_PAGE;
   const indexOfFirstUser = indexOfLastUser - USERS_PER_PAGE;
@@ -33,11 +26,13 @@ const Users = () => {
 
   const handleEdit = (id, currentRole) => {
     setEditingId(id);
-    setTempRole(currentRole);
+    setSelectedRole(currentRole); // Initialize with current role
   };
 
   const handleSave = (id) => {
-    // In a real app, you would update the data in your state/API here
+    console.log('PUT request ready for user:', id, 'with new role:', selectedRole);
+    // Here you'll implement:
+    // axiosInstance.put(`/users/${id}`, { role: selectedRole })
     setEditingId(null);
   };
 
@@ -46,8 +41,9 @@ const Users = () => {
   };
 
   const handleDelete = (id) => {
-    // In a real app, you would delete from state/API here
-    console.log('Delete user', id);
+    console.log('DELETE request ready for user:', id);
+    // Here you'll implement:
+    // axiosInstance.delete(`/users/${id}`)
   };
 
   const getRoleIcon = (role) => {
@@ -61,6 +57,10 @@ const Users = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div className="text-red-500 p-4">Error: {error.message}</div>;
+  if (!allUsers.length) return <div className="text-zinc-400 p-4">No users found</div>;
 
   return (
     <div className="min-h-screen bg-zinc-900 p-4 md:p-6">
@@ -84,42 +84,42 @@ const Users = () => {
             </thead>
             <tbody className="divide-y divide-zinc-700">
               {currentUsers.map(user => (
-                <tr key={user.id} className="bg-zinc-800 hover:bg-zinc-750 transition-colors">
+                <tr key={user._id} className="bg-zinc-800 hover:bg-zinc-750 transition-colors">
                   <td className="py-3 px-4 text-zinc-200 font-medium">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 w-10 h-10 bg-zinc-700 rounded-full flex items-center justify-center text-amber-400 font-bold">
-                        {user.name.charAt(0)}
+                        {user.username?.charAt(0) || 'U'}
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium">{user.name}</div>
+                        <div className="text-sm font-medium">{user.username || 'Unknown User'}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-zinc-300">{user.email}</td>
+                  <td className="py-3 px-4 text-zinc-300">{user.email || 'No email'}</td>
                   <td className="py-3 px-4">
-                    {editingId === user.id ? (
+                    {editingId === user._id ? (
                       <select
-                        value={tempRole}
-                        onChange={(e) => setTempRole(e.target.value)}
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
                         className="bg-zinc-700 border border-zinc-600 text-zinc-200 rounded-md px-3 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500"
                       >
-                        <option value="admin" className="bg-zinc-800">Admin</option>
-                        <option value="moderator" className="bg-zinc-800">Moderator</option>
-                        <option value="user" className="bg-zinc-800">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="user">User</option>
                       </select>
                     ) : (
                       <div className="flex items-center">
                         {getRoleIcon(user.role)}
-                        <span className="ml-2 capitalize text-zinc-200">{user.role}</span>
+                        <span className="ml-2 capitalize text-zinc-200">{user.role || 'user'}</span>
                       </div>
                     )}
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex justify-center space-x-3">
-                      {editingId === user.id ? (
+                      {editingId === user._id ? (
                         <>
                           <button
-                            onClick={() => handleSave(user.id)}
+                            onClick={() => handleSave(user._id)}
                             className="p-2 text-green-500 hover:text-green-400 hover:bg-zinc-700 rounded-full transition-colors"
                             title="Save"
                           >
@@ -136,14 +136,14 @@ const Users = () => {
                       ) : (
                         <>
                           <button
-                            onClick={() => handleEdit(user.id, user.role)}
+                            onClick={() => handleEdit(user._id, user.role)}
                             className="p-2 text-blue-400 hover:text-blue-300 hover:bg-zinc-700 rounded-full transition-colors"
                             title="Edit Role"
                           >
                             <FaEdit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(user.id)}
+                            onClick={() => handleDelete(user._id)}
                             className="p-2 text-red-500 hover:text-red-400 hover:bg-zinc-700 rounded-full transition-colors"
                             title="Delete User"
                           >
@@ -159,18 +159,22 @@ const Users = () => {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
+        {/* Pagination - Only show if we have users */}
+        {allUsers.length > 0 && (
+          <>
+            <div className="mt-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
 
-        <div className="mt-4 text-sm text-zinc-400">
-          Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, allUsers.length)} of {allUsers.length} users
-        </div>
+            <div className="mt-4 text-sm text-zinc-400">
+              Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, allUsers.length)} of {allUsers.length} users
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
