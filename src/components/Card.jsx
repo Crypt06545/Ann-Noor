@@ -1,90 +1,119 @@
-import { useAppContext } from "../context/AppContext";
-import { FaStar, FaRegStar, FaShoppingCart, FaMinus, FaPlus } from "react-icons/fa";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  FaShoppingCart,
+  FaMinus,
+  FaPlus,
+  FaRegStar,
+  FaStar,
+} from "react-icons/fa";
+import Rating from "react-rating";
+import { useAppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
 
 const Card = ({ id, product }) => {
-  console.log(product);
-
-  const { currency, cartItems, addToCart, removeFromCart } = useAppContext();
   const navigate = useNavigate();
+  const [count, setCount] = useState(0);
+  const { currency } = useAppContext();
+
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    const newCount = count + 1;
+    setCount(newCount);
+    toast.success(`${product.name} added to cart`);
+  };
+
+  const handleDecrease = (e) => {
+    e.stopPropagation();
+    if (count > 1) {
+      setCount((prev) => prev - 1);
+    } else {
+      toast.error(`${product.name} removed from cart`);
+      setCount(0);
+    }
+  };
 
   return (
     <div
       onClick={() => {
         navigate(`/about-products/${id}`);
-        // navigate(`/about-products`);
-        scrollTo(0, 0);
+        window.scrollTo(0, 0);
       }}
-      className="border border-zinc-700 rounded-lg p-4 bg-zinc-800 w-full h-full flex flex-col hover:shadow-md transition-shadow cursor-pointer relative"
+      className="border border-zinc-700 rounded-md px-4 py-3 bg-zinc-800 w-full cursor-pointer hover:shadow-lg hover:shadow-amber-400/10 transition-all"
     >
       {/* Product Image */}
-      <div className="group flex items-center justify-center h-48 md:h-56 lg:h-64 mb-4">
+      <div className="group flex items-center justify-center px-4 h-48 mb-3 overflow-hidden">
         <img
           className="group-hover:scale-105 transition-transform duration-300 h-full object-contain"
           src={product.images?.[0] || "https://via.placeholder.com/150"}
           alt={product.name}
+          loading="lazy"
         />
       </div>
 
       {/* Product Info */}
-      <div className="flex-grow flex flex-col">
-        <p className="text-zinc-400 text-sm capitalize">{product.category}</p>
-        <h3 className="text-zinc-200 font-medium text-lg mt-1 line-clamp-2">
+      <div className="text-zinc-400 text-sm">
+        <p className="capitalize">{product.category}</p>
+        <h3 className="text-zinc-200 font-medium text-lg mt-2 line-clamp-2">
           {product.name}
         </h3>
 
-        {/* Price */}
-        <div className="flex items-end justify-between mt-auto pt-4">
+        {/* Rating with react-rating */}
+        <div className="flex items-center mt-1">
+          <Rating
+            initialRating={product.rating}
+            readonly
+            emptySymbol={<FaRegStar className="text-amber-400/35 text-sm" />}
+            fullSymbol={<FaStar className="text-amber-400 text-sm" />}
+          />
+          <span className="ml-1 text-xs">({product.rating})</span>
+        </div>
+
+        {/* Price and Add to Cart */}
+        <div className="flex items-end justify-between mt-3">
           <div>
             {product.offerPrice ? (
               <>
-                <p className="text-xl font-bold text-amber-400">
+                <p className="text-xl md:text-2xl font-bold text-amber-400">
                   {currency} {product.offerPrice}
                 </p>
-                <p className="text-zinc-500 text-sm line-through">
+                <p className="text-zinc-500 text-sm md:text-base line-through">
                   {currency} {product.price}
                 </p>
               </>
             ) : (
-              <p className="text-xl font-bold text-amber-400">
+              <p className="text-xl md:text-2xl font-bold text-amber-400">
                 {currency} {product.price}
               </p>
             )}
           </div>
 
-          {/* Add to Cart */}
-          <div onClick={(e) => e.stopPropagation()} className="text-amber-400">
-            {!cartItems[id] ? (
+          {/* Quantity Selector */}
+          <div className="text-amber-400" onClick={(e) => e.stopPropagation()}>
+            {count === 0 ? (
               <button
-                className="flex items-center justify-center gap-2 bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 w-24 h-10 rounded-md text-amber-400 font-medium transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addToCart(id);
-                }}
+                className="flex items-center justify-center gap-2 bg-zinc-700 hover:bg-amber-400 hover:text-zinc-900 border border-amber-400 w-24 h-10 rounded-md text-amber-400 font-medium text-sm transition-colors"
+                onClick={handleAddToCart}
               >
-                <FaShoppingCart size={14} />
+                <FaShoppingCart size={12} />
                 Add
               </button>
             ) : (
-              <div className="flex items-center justify-between w-24 h-10 bg-zinc-700 rounded-md">
+              <div className="flex items-center justify-between w-24 h-10 bg-amber-400/25 rounded-md border border-amber-400">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeFromCart(id);
-                  }}
-                  className="h-full px-3 flex items-center text-amber-400 hover:text-amber-300"
+                  onClick={handleDecrease}
+                  className="h-full px-2 flex items-center text-amber-400 hover:text-amber-300 transition-colors"
                 >
-                  <FaMinus size={12} />
+                  <FaMinus size={10} />
                 </button>
-                <span className="text-amber-400 font-medium">{cartItems[id]}</span>
+                <span className="text-amber-400 font-medium text-sm">
+                  {count}
+                </span>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(id);
-                  }}
-                  className="h-full px-3 flex items-center text-amber-400 hover:text-amber-300"
+                  onClick={handleAddToCart}
+                  className="h-full px-2 flex items-center text-amber-400 hover:text-amber-300 transition-colors"
                 >
-                  <FaPlus size={12} />
+                  <FaPlus size={10} />
                 </button>
               </div>
             )}

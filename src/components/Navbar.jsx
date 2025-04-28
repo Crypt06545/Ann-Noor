@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, setUser, cartCount } = useAppContext();
+  const { user, setUser,} = useAppContext();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -124,7 +124,7 @@ const Navbar = () => {
           <NavLink to="/cart" className="relative">
             <FiShoppingBag className="hover:text-amber-600 cursor-pointer" />
             <span className="absolute -top-2 -right-2 bg-amber-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              {cartCount()}
+              3
             </span>
           </NavLink>
         </div>
@@ -208,7 +208,7 @@ const Navbar = () => {
                     <span className="text-lg text-zinc-200">Shopping Cart</span>
                   </div>
                   <span className="bg-amber-600 text-white text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center">
-                    {cartCount()}
+                    {4}
                   </span>
                 </NavLink>
               </div>

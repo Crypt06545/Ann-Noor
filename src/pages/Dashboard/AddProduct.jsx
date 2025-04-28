@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import { useAppContext } from "../../context/AppContext";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
-
 export default function AddProduct() {
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
@@ -17,12 +16,13 @@ export default function AddProduct() {
       stockStatus: "",
       sizes: [],
       tags: [],
-      sku:'',
+      sku: "",
       images: [null, null, null, null],
+      rating: 0,
     },
   });
 
-  const {loading,setLoading} = useAppContext()
+  const { loading, setLoading } = useAppContext();
 
   const images = watch("images") || [];
   const sizes = watch("sizes") || [];
@@ -69,9 +69,9 @@ export default function AddProduct() {
 
   const onSubmit = async (data) => {
     try {
-      setLoading(true)
+      setLoading(true);
       const formData = new FormData();
-      
+
       // Append basic fields
       formData.append("name", data.productName);
       formData.append("price", data.price);
@@ -80,16 +80,17 @@ export default function AddProduct() {
       formData.append("category", data.category);
       formData.append("sku", data.sku);
       formData.append("stockStatus", data.stockStatus);
-      
+      formData.append("rating", data.rating);
+
       // Append sizes and tags as arrays
       data.sizes.forEach((size) => {
         formData.append("sizes", size.text);
       });
-      
+
       data.tags.forEach((tag) => {
         formData.append("tags", tag.text);
       });
-      
+
       // Append images (only non-null ones)
       data.images.forEach((image) => {
         if (image) {
@@ -97,14 +98,18 @@ export default function AddProduct() {
         }
       });
 
-      const response = await axiosInstance.post("/products/create-product", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axiosInstance.post(
+        "/products/create-product",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       console.log("Product created:", response);
-      
+
       reset({
         productName: "",
         price: "",
@@ -114,16 +119,21 @@ export default function AddProduct() {
         stockStatus: "",
         sizes: [],
         tags: [],
-        sku:'',
+        sku: "",
         images: [null, null, null, null],
       });
 
       toast.success(response.data.message || "Product added successfully!");
-
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       // console.error("Error:", error.response?.data || error.message);
-      toast.error(`${error.response?.data?.message || error.message ||'Somethig Went Wrong!!'}`);
+      toast.error(
+        `${
+          error.response?.data?.message ||
+          error.message ||
+          "Somethig Went Wrong!!"
+        }`
+      );
     }
   };
 
@@ -152,8 +162,8 @@ export default function AddProduct() {
                   />
                   <div className="w-24 h-24 border-2 border-dashed border-zinc-600 rounded-md flex items-center justify-center overflow-hidden">
                     {image ? (
-                      <img 
-                        src={URL.createObjectURL(image)} 
+                      <img
+                        src={URL.createObjectURL(image)}
                         alt={`Preview ${index}`}
                         className="w-full h-full object-cover"
                       />
@@ -308,30 +318,41 @@ export default function AddProduct() {
           </div>
         </div>
 
-        
-          {/* SKU */}
-          <div>
-            <label className="block text-zinc-300 text-sm mb-1 font-medium">
-              SKU
-            </label>
-            <input
-              type="text"
-              {...register("sku", { required: "SKU is required" })}
-              className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        {/* SKU */}
+        <div>
+          <label className="block text-zinc-300 text-sm mb-1 font-medium">
+            SKU
+          </label>
+          <input
+            type="text"
+            {...register("sku", { required: "SKU is required" })}
+            className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="VAM-OIL-003"
-            />
-          </div>
+          />
+        </div>
+        {/* Rating */}
+        <div>
+          <label className="block text-zinc-300 text-sm mb-1 font-medium">
+            Rating
+          </label>
+          <input
+            type="number"
+            {...register("rating", { required: "Rating is required" })}
+            className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-600 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            placeholder="4.5"
+          />
+        </div>
 
-          <button
-        type="submit"
-        className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-        disabled={loading}
-      >
-        {loading && (
-          <AiOutlineLoading3Quarters className="animate-spin text-xl" />
-        )}
-        {loading ? "Adding..." : "Add Product"}
-      </button>
+        <button
+          type="submit"
+          className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-3 rounded-md transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={loading}
+        >
+          {loading && (
+            <AiOutlineLoading3Quarters className="animate-spin text-xl" />
+          )}
+          {loading ? "Adding..." : "Add Product"}
+        </button>
       </form>
     </div>
   );

@@ -6,7 +6,7 @@ export const fetchBestSellingProducts = async () => {
     const response = await axiosInstance.get("/products/all-products");
     return response;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
 
     throw new Error(
       error.response?.data?.message || "Failed to fetch products"
@@ -14,7 +14,7 @@ export const fetchBestSellingProducts = async () => {
   }
 };
 
-// single product details 
+// single product details
 export const producDetails = async (id) => {
   try {
     const response = await axiosInstance.get(`/products/product-details/${id}`);
@@ -25,13 +25,12 @@ export const producDetails = async (id) => {
   }
 };
 
-// get all users 
-export const getAllUsers = async()=>{
+// get all users
+export const getAllUsers = async () => {
   try {
-    const response = await axiosInstance.get('/users/all-users')
-    return response.data
+    const response = await axiosInstance.get("/users/all-users");
+    return response.data;
   } catch (error) {
     console.log(error);
-    
   }
-}
+};
