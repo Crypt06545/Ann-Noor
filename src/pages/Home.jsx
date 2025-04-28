@@ -10,8 +10,6 @@ const Home = () => {
     <div className='min-h-screen bg-zinc-900'>
       <Hero/>
       <BestSelling/>
-      <AddProduct/>
-      <CheckoutPage/>
     </div>
   )
 }

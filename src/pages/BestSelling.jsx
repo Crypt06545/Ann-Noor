@@ -2,6 +2,7 @@ import React from "react";
 import Card from "../components/Card";
 import { useQuery } from "@tanstack/react-query";
 import { fetchBestSellingProducts } from "../api/Api";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 const BestSelling = () => {
   const { data: bestSellingData, isLoading, isError } = useQuery({
@@ -12,7 +13,7 @@ const BestSelling = () => {
   // safely access the products
   const products = bestSellingData?.data?.data || [];
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <LoadingSpinner/>;
   if (isError) return <div>Error fetching products</div>;
 
   return (
