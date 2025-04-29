@@ -10,23 +10,50 @@ import {
 import Rating from "react-rating";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
+import axiosInstance from "../lib/axios";
 
 const Card = ({ id, product }) => {
   const navigate = useNavigate();
   const [count, setCount] = useState(0);
-  const { currency } = useAppContext();
+  const { currency, user } = useAppContext();
+  // console.log(user);
+  // console.log(id);
+  
+  
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.stopPropagation();
+
+    if (!user) {
+      toast.error("To add to cart you need to login first");
+      return;
+    }
+
     const newCount = count + 1;
     setCount(newCount);
-    toast.success(`${product.name} added to cart`);
+    try {
+      const { data } = await axiosInstance.post("/cart/add-to-cart", {
+        productId: id,
+        quantity: 1,
+      });
+      console.log(data);
+
+      toast.success(`${product.name} added to cart`);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleDecrease = (e) => {
     e.stopPropagation();
+
+    if (!user) {
+      toast.error("To add to cart you need to login first");
+      return;
+    }
     if (count > 1) {
       setCount((prev) => prev - 1);
+      toast.error(`${product.name} removed from cart`);
     } else {
       toast.error(`${product.name} removed from cart`);
       setCount(0);

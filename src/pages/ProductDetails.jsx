@@ -4,9 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { producDetails } from "../api/Api";
 import { useParams } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 const ProductDetails = () => {
-  const { currency } = useAppContext();
+  const { currency ,user} = useAppContext();
   const { id } = useParams();
 
   // Initialize state for thumbnail
@@ -23,7 +25,14 @@ const ProductDetails = () => {
 
   const product = productDetails?.data?.data;
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-amber-400">Loading...</div>;
+
+  const addToCart = async()=>{
+    if (!user) {
+      toast.error("To add to cart you need to login first");
+    }
+  }
+
+  if (isLoading) return <LoadingSpinner/>;
   if (isError) return <div className="min-h-screen flex items-center justify-center text-red-500">Error loading product details</div>;
 
   return product ? (
@@ -88,7 +97,7 @@ const ProductDetails = () => {
             )}
 
             <div className="flex items-center mt-10 gap-4 text-base">
-              <button className="w-full py-3.5 cursor-pointer font-medium bg-zinc-800 text-amber-400 hover:bg-zinc-700 transition border border-zinc-700">
+              <button onClick={addToCart} className="w-full py-3.5 cursor-pointer font-medium bg-zinc-800 text-amber-400 hover:bg-zinc-700 transition border border-zinc-700">
                 Add to Cart
               </button>
               <button className="w-full py-3.5 cursor-pointer font-medium bg-amber-500 text-zinc-900 hover:bg-amber-600 transition">

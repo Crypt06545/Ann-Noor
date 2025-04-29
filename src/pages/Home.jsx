@@ -3,7 +3,7 @@ import Hero from '../components/Hero'
 import BestSelling from './BestSelling'
 import ProductDetails from './ProductDetails'
 import AddProduct from './Dashboard/AddProduct'
-import CheckoutPage from './Shipping'
+import WhatsAppFloatingButton from '../components/WhatsAppFloatingButton'
 
 const Home = () => {
   return (
