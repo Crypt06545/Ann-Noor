@@ -13,7 +13,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { user, setUser } = useAppContext();
-  console.log(user);
+  // console.log(user);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -101,38 +101,40 @@ const Navbar = () => {
               </NavLink>
             </button>
           ) : (
-            <div className="relative group">
-              <img
-                className="w-10 rounded-full"
-                src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
-                alt="user"
-              />
-              <ul className="hidden group-hover:block absolute top-10 right-0 bg-zinc-800 shadow py-2.5 w-30 rounded-md text-sm z-40">
-                <li className="p-1.5 pl-3 hover:bg-zinc-600 cursor-pointer">
-                  <NavLink
-                    to={user.role === "admin" ? "/dashboard" : "/my-orders"}
-                  >
-                    {user.role === "admin" ? "Dashboard" : "My Orders"}
-                  </NavLink>
-                </li>
-                <li className="p-1.5 pl-3 hover:bg-zinc-600 cursor-pointer">
-                  <button onClick={logOut}>Logout</button>
-                </li>
-              </ul>
-            </div>
-          )}
+            <>
+              <div className="relative group">
+                <img
+                  className="w-10 rounded-full"
+                  src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                  alt="user"
+                />
+                <ul className="hidden group-hover:block absolute top-10 right-0 bg-zinc-800 shadow py-2.5 w-30 rounded-md text-sm z-40">
+                  <li className="p-1.5 pl-3 hover:bg-zinc-600 cursor-pointer">
+                    <NavLink
+                      to={user.role === "admin" ? "/dashboard" : "/my-orders"}
+                    >
+                      {user.role === "admin" ? "Dashboard" : "My Orders"}
+                    </NavLink>
+                  </li>
+                  <li className="p-1.5 pl-3 hover:bg-zinc-600 cursor-pointer">
+                    <button onClick={logOut}>Logout</button>
+                  </li>
+                </ul>
+              </div>
 
-          <NavLink to="/cart" className="relative">
-            <FiShoppingBag className="hover:text-amber-600 cursor-pointer" />
-            <span className="absolute -top-2 -right-2 bg-amber-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              {Array.isArray(user?.cartItems)
-                ? user.cartItems.reduce(
-                    (total, item) => total + Number(item.quantity || 0),
-                    0
-                  )
-                : 0}
-            </span>
-          </NavLink>
+              <NavLink to="/cart" className="relative">
+                <FiShoppingBag className="hover:text-amber-600 cursor-pointer" />
+                <span className="absolute -top-2 -right-2 bg-amber-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {Array.isArray(user?.cartItems)
+                    ? user.cartItems.reduce(
+                        (total, item) => total + Number(item.quantity || 0),
+                        0
+                      )
+                    : 0}
+                </span>
+              </NavLink>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}

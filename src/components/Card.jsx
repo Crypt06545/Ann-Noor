@@ -7,19 +7,30 @@ import {
   FaRegStar,
   FaStar,
 } from "react-icons/fa";
-import Rating from "react-rating";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
+
+// Custom Star Rating Component to replace react-rating
+const StarRating = ({ rating }) => {
+  return (
+    <div className="flex items-center">
+      {[...Array(5)].map((_, i) =>
+        i < rating ? (
+          <FaStar key={i} className="text-amber-400 text-sm" />
+        ) : (
+          <FaRegStar key={i} className="text-amber-400/35 text-sm" />
+        )
+      )}
+      <span className="ml-1 text-xs">({rating})</span>
+    </div>
+  );
+};
 
 const Card = ({ id, product }) => {
   const navigate = useNavigate();
   const [count, setCount] = useState(0);
   const { currency, user } = useAppContext();
-  // console.log(user);
-  // console.log(id);
-  
-  
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
@@ -36,30 +47,37 @@ const Card = ({ id, product }) => {
         productId: id,
         quantity: 1,
       });
-      console.log(data);
-
       toast.success(`${product.name} added to cart`);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleDecrease = (e) => {
+  const handleDecrease = async (e) => {
     e.stopPropagation();
 
     if (!user) {
-      toast.error("To add to cart you need to login first");
+      toast.error("To modify cart you need to login first");
       return;
     }
-    if (count > 1) {
-      setCount((prev) => prev - 1);
-      toast.error(`${product.name} removed from cart`);
-    } else {
-      toast.error(`${product.name} removed from cart`);
-      setCount(0);
+
+    try {
+      await axiosInstance.post("/cart/decrease-quantity", {
+        productId: id,
+      });
+
+      if (count > 1) {
+        setCount((prev) => prev - 1);
+        toast.success(`${product.name} quantity decreased`);
+      } else {
+        setCount(0);
+        toast.success(`${product.name} removed from cart`);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to update cart");
     }
   };
-
   return (
     <div
       onClick={() => {
@@ -85,16 +103,8 @@ const Card = ({ id, product }) => {
           {product.name}
         </h3>
 
-        {/* Rating with react-rating */}
-        <div className="flex items-center mt-1">
-          <Rating
-            initialRating={product.rating}
-            readonly
-            emptySymbol={<FaRegStar className="text-amber-400/35 text-sm" />}
-            fullSymbol={<FaStar className="text-amber-400 text-sm" />}
-          />
-          <span className="ml-1 text-xs">({product.rating})</span>
-        </div>
+        {/* Custom Star Rating */}
+        <StarRating rating={product.rating} />
 
         {/* Price and Add to Cart */}
         <div className="flex items-end justify-between mt-3">

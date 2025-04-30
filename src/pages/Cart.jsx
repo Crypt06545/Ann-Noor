@@ -1,17 +1,45 @@
 import React, { useState } from "react";
-import { FaUser, FaMapMarkedAlt, FaCreditCard, FaShoppingCart } from "react-icons/fa";
-import bkashLogo from '../assets/bkash.png';
-import nagadLogo from '../assets/nagad.png';
+import {
+  FaUser,
+  FaMapMarkedAlt,
+  FaCreditCard,
+  FaShoppingCart,
+} from "react-icons/fa";
+import bkashLogo from "../assets/bkash.png";
+import nagadLogo from "../assets/nagad.png";
 import toast from "react-hot-toast";
+import { useAppContext } from "../context/AppContext";
+import { useQuery } from "@tanstack/react-query";
+import { producDetails } from "../api/Api";
 
 export default function Cart() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [bkashData, setBkashData] = useState({ phone: "", transactionId: "" });
   const [nagadData, setNagadData] = useState({ phone: "", transactionId: "" });
-  
+  const { user } = useAppContext();
+  // console.log(user?.cartItems);
+  const cartItems = user?.cartItems || [];
+  console.log(cartItems);
+
+  const {
+    data: products,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["cartProducts", cartItems],
+    queryFn: async () => {
+      const productPromises = cartItems.map((item) =>
+        producDetails(item?.product)
+      );
+      return Promise.all(productPromises);
+    },
+    enabled: cartItems.length > 0,
+  });
+  console.log(products);
+
   const [formData, setFormData] = useState({
     phone: "",
-  email: "",
+    email: "",
     firstName: "",
     lastName: "",
     address1: "",
@@ -19,16 +47,24 @@ export default function Cart() {
     city: "",
     country: "United States",
     state: "",
-    postalCode: ""
+    postalCode: "",
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const calculateSubtotal = () => {
+    if (!products || !cartItems) return 0;
+    
+    return cartItems.reduce((total, item, index) => {
+      const product = products[index]?.data?.data;
+      return total + (product?.price || 0) * item.quantity;
+    }, 0);
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // Validate required fields based on payment method
     if (paymentMethod === "bkash") {
       if (!bkashData.phone || !bkashData.transactionId) {
@@ -41,31 +77,43 @@ export default function Cart() {
         return;
       }
     }
-    
+
     // Basic form validation
-    const requiredFields = ['phone', 'firstName', 'lastName', 'address1', 'city', 'state', 'postalCode'];
+    const requiredFields = [
+      "phone",
+      "firstName",
+      "lastName",
+      "address1",
+      "city",
+      "state",
+      "postalCode",
+    ];
     for (const field of requiredFields) {
       if (!formData[field]) {
         toast.error(`Please fill in the ${field} field`);
         return;
       }
     }
-    
+
     // Prepare order data
     const orderData = {
       customer: formData,
       payment: {
         method: paymentMethod,
-        details: paymentMethod === "bkash" ? bkashData : 
-                paymentMethod === "nagad" ? nagadData : null
+        details:
+          paymentMethod === "bkash"
+            ? bkashData
+            : paymentMethod === "nagad"
+            ? nagadData
+            : null,
       },
       orderTotal: 199.89,
       items: [
         { name: "Black Automatic Watch", quantity: 1, price: 169.99 },
-        { name: "Product 2", quantity: 1, price: 29.90 }
-      ]
+        { name: "Product 2", quantity: 1, price: 29.9 },
+      ],
     };
-    
+
     console.log("Order submitted:", orderData);
     toast.success("Order placed successfully!");
     // Here you would typically send this data to your backend
@@ -94,13 +142,17 @@ export default function Cart() {
                 <div className="bg-zinc-700 p-2 rounded-md mr-3 text-amber-400">
                   <FaUser className="w-4 h-4" />
                 </div>
-                <h2 className="text-lg font-semibold text-amber-500">Contact Information</h2>
+                <h2 className="text-lg font-semibold text-amber-500">
+                  Contact Information
+                </h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Phone Number</label>
-                  <input 
-                    type="tel" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
                     name="phone"
                     className={inputStyle}
                     placeholder="+1 (555) 123-4567"
@@ -110,9 +162,11 @@ export default function Cart() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Email Address</label>
-                  <input 
-                    type="email" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
                     name="email"
                     className={inputStyle}
                     placeholder="your@email.com"
@@ -129,15 +183,19 @@ export default function Cart() {
                 <div className="bg-zinc-700 p-2 rounded-md mr-3 text-amber-400">
                   <FaMapMarkedAlt className="w-4 h-4" />
                 </div>
-                <h2 className="text-lg font-semibold text-amber-500">Shipping Address</h2>
+                <h2 className="text-lg font-semibold text-amber-500">
+                  Shipping Address
+                </h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">First Name</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
                     name="firstName"
-                    className={inputStyle} 
+                    className={inputStyle}
                     placeholder="John"
                     value={formData.firstName}
                     onChange={handleChange}
@@ -145,11 +203,13 @@ export default function Cart() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Last Name</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
                     name="lastName"
-                    className={inputStyle} 
+                    className={inputStyle}
                     placeholder="Doe"
                     value={formData.lastName}
                     onChange={handleChange}
@@ -157,11 +217,13 @@ export default function Cart() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Address Line 1</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Address Line 1
+                  </label>
+                  <input
+                    type="text"
                     name="address1"
-                    className={inputStyle} 
+                    className={inputStyle}
                     placeholder="123 Main St"
                     value={formData.address1}
                     onChange={handleChange}
@@ -169,22 +231,26 @@ export default function Cart() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Address Line 2 (Optional)</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Address Line 2 (Optional)
+                  </label>
+                  <input
+                    type="text"
                     name="address2"
-                    className={inputStyle} 
+                    className={inputStyle}
                     placeholder="Apt, suite, etc."
                     value={formData.address2}
                     onChange={handleChange}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">City</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    City
+                  </label>
+                  <input
+                    type="text"
                     name="city"
-                    className={inputStyle} 
+                    className={inputStyle}
                     placeholder="New York"
                     value={formData.city}
                     onChange={handleChange}
@@ -192,8 +258,10 @@ export default function Cart() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Country</label>
-                  <select 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Country
+                  </label>
+                  <select
                     name="country"
                     className={inputStyle}
                     value={formData.country}
@@ -205,11 +273,13 @@ export default function Cart() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">State/Province</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    State/Province
+                  </label>
+                  <input
+                    type="text"
                     name="state"
-                    className={inputStyle} 
+                    className={inputStyle}
                     placeholder="NY"
                     value={formData.state}
                     onChange={handleChange}
@@ -217,11 +287,13 @@ export default function Cart() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Postal Code</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Postal Code
+                  </label>
+                  <input
+                    type="text"
                     name="postalCode"
-                    className={inputStyle} 
+                    className={inputStyle}
                     placeholder="10001"
                     value={formData.postalCode}
                     onChange={handleChange}
@@ -237,9 +309,11 @@ export default function Cart() {
                 <div className="bg-zinc-700 p-2 rounded-md mr-3 text-amber-400">
                   <FaCreditCard className="w-4 h-4" />
                 </div>
-                <h2 className="text-lg font-semibold text-amber-500">Payment Method</h2>
+                <h2 className="text-lg font-semibold text-amber-500">
+                  Payment Method
+                </h2>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center">
                   <input
@@ -251,11 +325,14 @@ export default function Cart() {
                     onChange={() => setPaymentMethod("cod")}
                     className="h-4 w-4 text-amber-500 focus:ring-amber-500 border-zinc-600"
                   />
-                  <label htmlFor="cod" className="ml-3 block text-sm font-medium text-zinc-300">
+                  <label
+                    htmlFor="cod"
+                    className="ml-3 block text-sm font-medium text-zinc-300"
+                  >
                     Cash on Delivery
                   </label>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     id="bkash"
@@ -266,11 +343,14 @@ export default function Cart() {
                     onChange={() => setPaymentMethod("bkash")}
                     className="h-4 w-4 text-amber-500 focus:ring-amber-500 border-zinc-600"
                   />
-                  <label htmlFor="bkash" className="ml-3 block text-sm font-medium text-zinc-300">
+                  <label
+                    htmlFor="bkash"
+                    className="ml-3 block text-sm font-medium text-zinc-300"
+                  >
                     bKash
                   </label>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     id="nagad"
@@ -281,7 +361,10 @@ export default function Cart() {
                     onChange={() => setPaymentMethod("nagad")}
                     className="h-4 w-4 text-amber-500 focus:ring-amber-500 border-zinc-600"
                   />
-                  <label htmlFor="nagad" className="ml-3 block text-sm font-medium text-zinc-300">
+                  <label
+                    htmlFor="nagad"
+                    className="ml-3 block text-sm font-medium text-zinc-300"
+                  >
                     Nagad
                   </label>
                 </div>
@@ -291,13 +374,21 @@ export default function Cart() {
               {paymentMethod === "bkash" && (
                 <div className="mt-6 bg-zinc-750 p-4 rounded-lg border border-zinc-700">
                   <div className="flex items-center gap-2 mb-3">
-                    <img src={bkashLogo} alt="Bkash Logo" className="w-6 h-6 md:w-8 md:h-8 object-contain" />
-                    <h3 className="text-lg font-semibold text-amber-400">BKASH Payment</h3>
+                    <img
+                      src={bkashLogo}
+                      alt="Bkash Logo"
+                      className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                    />
+                    <h3 className="text-lg font-semibold text-amber-400">
+                      BKASH Payment
+                    </h3>
                   </div>
 
                   <div className="mb-4">
                     <p className="text-zinc-300">
-                      Send <span className="text-amber-400 font-bold">$199.89</span> to:
+                      Send{" "}
+                      <span className="text-amber-400 font-bold">$199.89</span>{" "}
+                      to:
                     </p>
                     <p className="text-zinc-300">
                       Account: <span className="font-bold">01316979159</span>
@@ -306,27 +397,38 @@ export default function Cart() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-zinc-300 mb-1">Your BKASH Number</label>
+                      <label className="block text-zinc-300 mb-1">
+                        Your BKASH Number
+                      </label>
                       <input
                         type="tel"
                         name="bkashPhone"
                         placeholder="01XXXXXXXXX"
                         className="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-zinc-200"
                         value={bkashData.phone}
-                        onChange={(e) => setBkashData({...bkashData, phone: e.target.value})}
+                        onChange={(e) =>
+                          setBkashData({ ...bkashData, phone: e.target.value })
+                        }
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-zinc-300 mb-1">Transaction ID</label>
+                      <label className="block text-zinc-300 mb-1">
+                        Transaction ID
+                      </label>
                       <input
                         type="text"
                         name="bkashTransactionId"
                         placeholder="TRX123456"
                         className="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-zinc-200"
                         value={bkashData.transactionId}
-                        onChange={(e) => setBkashData({...bkashData, transactionId: e.target.value})}
+                        onChange={(e) =>
+                          setBkashData({
+                            ...bkashData,
+                            transactionId: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
@@ -338,13 +440,21 @@ export default function Cart() {
               {paymentMethod === "nagad" && (
                 <div className="mt-6 bg-zinc-750 p-4 rounded-lg border border-zinc-700">
                   <div className="flex items-center gap-2 mb-3">
-                    <img src={nagadLogo} alt="Nagad Logo" className="w-6 h-6 md:w-8 md:h-8 object-contain" />
-                    <h3 className="text-lg font-semibold text-amber-400">NAGAD Payment</h3>
+                    <img
+                      src={nagadLogo}
+                      alt="Nagad Logo"
+                      className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                    />
+                    <h3 className="text-lg font-semibold text-amber-400">
+                      NAGAD Payment
+                    </h3>
                   </div>
 
                   <div className="mb-4">
                     <p className="text-zinc-300">
-                      Send <span className="text-amber-400 font-bold">$199.89</span> to:
+                      Send{" "}
+                      <span className="text-amber-400 font-bold">$199.89</span>{" "}
+                      to:
                     </p>
                     <p className="text-zinc-300">
                       Account: <span className="font-bold">01316979159</span>
@@ -353,27 +463,38 @@ export default function Cart() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-zinc-300 mb-1">Your NAGAD Number</label>
+                      <label className="block text-zinc-300 mb-1">
+                        Your NAGAD Number
+                      </label>
                       <input
                         type="tel"
                         name="nagadPhone"
                         placeholder="01XXXXXXXXX"
                         className="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-zinc-200"
                         value={nagadData.phone}
-                        onChange={(e) => setNagadData({...nagadData, phone: e.target.value})}
+                        onChange={(e) =>
+                          setNagadData({ ...nagadData, phone: e.target.value })
+                        }
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-zinc-300 mb-1">Transaction ID</label>
+                      <label className="block text-zinc-300 mb-1">
+                        Transaction ID
+                      </label>
                       <input
                         type="text"
                         name="nagadTransactionId"
                         placeholder="TRX123456"
                         className="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-zinc-200"
                         value={nagadData.transactionId}
-                        onChange={(e) => setNagadData({...nagadData, transactionId: e.target.value})}
+                        onChange={(e) =>
+                          setNagadData({
+                            ...nagadData,
+                            transactionId: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
@@ -385,66 +506,115 @@ export default function Cart() {
 
           {/* Right Section - Order Summary */}
           <div className="lg:sticky lg:top-8 bg-zinc-800 rounded-lg border border-zinc-700 p-6">
-            <h2 className="text-lg font-semibold mb-6 text-amber-500 pb-4 border-b border-zinc-700">Order Summary</h2>
-            
+            <h2 className="text-lg font-semibold mb-6 text-amber-500 pb-4 border-b border-zinc-700">
+              Order Summary
+            </h2>
+
             <div className="space-y-4 mb-6">
-              {[1, 2].map((_, index) => (
-                <div className="flex items-start gap-4" key={index}>
-                  <div className="w-16 h-16 bg-zinc-700 rounded-md flex items-center justify-center text-amber-400 flex-shrink-0">
-                    <span className="text-xl font-bold">P{index + 1}</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-zinc-200">Black Automatic Watch</h3>
-                    <p className="text-xs text-zinc-400 mb-2">One size</p>
-                    <div className="flex items-center gap-2">
-                      <button className="px-2 py-1 border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors">
-                        -
-                      </button>
-                      <span className="text-zinc-200 text-sm w-6 text-center">1</span>
-                      <button className="px-2 py-1 border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors">
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-sm text-amber-400">$169.99</p>
-                    <p className="text-xs text-zinc-500 line-through">$199.99</p>
-                  </div>
+              {isLoading ? (
+                <div className="flex justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500"></div>
                 </div>
-              ))}
+              ) : isError ? (
+                <div className="text-red-400 text-sm">
+                  Error loading products
+                </div>
+              ) : (
+                products?.map((productRes, index) => {
+                  const product = productRes.data.data; // Access the nested product data
+                  const cartItem = cartItems[index];
+
+                  return (
+                    <div className="flex items-start gap-4" key={product._id}>
+                      <div className="w-16 h-16 bg-zinc-700 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {product.images?.[0] ? (
+                          <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xl font-bold text-amber-400">
+                            P{index + 1}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-zinc-200">
+                          {product.name}
+                        </h3>
+                        <p className="text-xs text-zinc-400 mb-2">
+                          {product.sizes?.join(", ") || "One size"}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="px-2 py-1 border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors"
+                            // onClick={() => updateQuantity(product._id, cartItem.quantity - 1)}
+                            disabled={cartItem.quantity <= 1}
+                          >
+                            -
+                          </button>
+                          <span className="text-zinc-200 text-sm w-6 text-center">
+                            {cartItem.quantity}
+                          </span>
+                          <button
+                            className="px-2 py-1 border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors"
+                            // onClick={() => updateQuantity(product._id, cartItem.quantity + 1)}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-sm text-amber-400">
+                          ${(product.offerPrice * cartItem.quantity).toFixed(2)}
+                        </p>
+                        {product.offerPrice && (
+                          <p className="text-xs text-zinc-500 line-through">
+                            $
+                            {(product. price * cartItem.quantity).toFixed(
+                              2
+                            )}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             <div className="space-y-3 text-sm text-zinc-300 mb-6">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>$169.99</span>
+                <span>${calculateSubtotal().toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>$5.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax</span>
-                <span>$24.90</span>
+                <span className="text-green-500 text-xl">Free</span>
               </div>
             </div>
 
             <div className="pt-4 border-t border-zinc-700 mb-6">
               <div className="flex justify-between font-semibold text-zinc-200">
                 <span>Order Total</span>
-                <span className="text-amber-400">$199.89</span>
+                <span className="text-amber-400">
+                  {/* ${calculateGrandTotal().toFixed(2)} */}
+                </span>
               </div>
             </div>
 
-            <button 
+            <button
               onClick={handleSubmit}
               className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 font-semibold py-3 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
+              disabled={isLoading || isError}
             >
               {paymentMethod === "cod" ? "Place Order" : "Pay Now"}
             </button>
 
             <p className="mt-4 text-xs text-zinc-400 text-center">
-              By placing your order, you agree to our Terms of Service and Privacy Policy.
+              By placing your order, you agree to our Terms of Service and
+              Privacy Policy.
             </p>
           </div>
         </div>

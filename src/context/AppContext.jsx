@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 
@@ -13,27 +13,42 @@ const fetchUser = async () => {
 export const AppContextProvider = ({ children }) => {
   const currency = import.meta.env.VITE_CURRENCY;
 
+  // Local state
+  const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showUserLogin, setShowUserLogin] = useState(null);
   const [products, setProducts] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  const { data: user, isLoading: authLoading, isError } = useQuery({
+  // React Query
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["user"],
-    queryFn: fetchUser
-    });
+    queryFn: fetchUser,
+    refetchInterval:2000,
+  });
 
-  const cartItems = user?.cartItems || [];
+  // Sync React Query data with local state
+  useEffect(() => {
+    setAuthLoading(isLoading);
 
-  // Update isAdmin dynamically
-  useState(() => {
-    if (user?.role) {
-      setIsAdmin(user.role === "admin");
+    if (data) {
+      setUser(data);
+      setIsAdmin(data.role === "admin");
+      setCartItems(data.cartItems || []);
     }
-  }, [user]);
+
+    if (isError) {
+      setUser(null);
+      setIsAdmin(false);
+      setCartItems([]);
+    }
+  }, [data, isLoading, isError]);
 
   const value = {
     user,
+    setUser,
     isAdmin,
     setIsAdmin,
     showUserLogin,
@@ -45,6 +60,7 @@ export const AppContextProvider = ({ children }) => {
     loading,
     setLoading,
     authLoading,
+    setAuthLoading,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
