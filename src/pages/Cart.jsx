@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
 import { useQuery } from "@tanstack/react-query";
 import { producDetails } from "../api/Api";
+import axiosInstance from "../lib/axios";
 
 export default function Cart() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -18,8 +19,87 @@ export default function Cart() {
   const [nagadData, setNagadData] = useState({ phone: "", transactionId: "" });
   const { user } = useAppContext();
   // console.log(user?.cartItems);
+  const [updatingQuantities, setUpdatingQuantities] = useState({});
+
   const cartItems = user?.cartItems || [];
-  console.log(cartItems);
+  // console.log(cartItems);
+
+  const handleIncreaseQuantity = async (productId) => {
+    if (!user) {
+      toast.error("You need to login to modify your cart");
+      return;
+    }
+
+    setUpdatingQuantities((prev) => ({
+      ...prev,
+      [productId]: true,
+    }));
+
+    try {
+      const response = await axiosInstance.post("/cart/add-to-cart", {
+        productId: productId,
+        quantity: 1,
+      });
+
+      if (response.data.success) {
+        toast.success("Quantity increased");
+      } else {
+        throw new Error(response.data.message || "Failed to increase quantity");
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to increase quantity"
+      );
+      console.error("Increase quantity error:", error);
+    } finally {
+      setUpdatingQuantities((prev) => ({
+        ...prev,
+        [productId]: false,
+      }));
+    }
+  };
+
+  const handleDecreaseQuantity = async (productId, currentQuantity) => {
+    if (!user) {
+      toast.error("You need to login to modify your cart");
+      return;
+    }
+
+    if (currentQuantity <= 1) {
+      // Optionally handle item removal here
+      return;
+    }
+
+    setUpdatingQuantities((prev) => ({
+      ...prev,
+      [productId]: true,
+    }));
+
+    try {
+      const response = await axiosInstance.post("/cart/decrease-quantity", {
+        productId: productId,
+      });
+
+      if (response.data.success) {
+        // You should update your context/state here with the new cart data
+        // For example, if your API returns the updated cart:
+        // updateCart(response.data.cart);
+        toast.success("Quantity decreased");
+      } else {
+        throw new Error(response.data.message || "Failed to decrease quantity");
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to decrease quantity"
+      );
+      console.error("Decrease quantity error:", error);
+    } finally {
+      setUpdatingQuantities((prev) => ({
+        ...prev,
+        [productId]: false,
+      }));
+    }
+  };
 
   const {
     data: products,
@@ -56,15 +136,18 @@ export default function Cart() {
 
   const calculateSubtotal = () => {
     if (!products || !cartItems) return 0;
-    
+
     return cartItems.reduce((total, item, index) => {
       const product = products[index]?.data?.data;
-      return total + (product?.price || 0) * item.quantity;
+      return total + (product?.offerPrice || 0) * item.quantity;
     }, 0);
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
+  // updateQuantity
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
     // Validate required fields based on payment method
     if (paymentMethod === "bkash") {
       if (!bkashData.phone || !bkashData.transactionId) {
@@ -77,7 +160,7 @@ export default function Cart() {
         return;
       }
     }
-
+  
     // Basic form validation
     const requiredFields = [
       "phone",
@@ -94,8 +177,25 @@ export default function Cart() {
         return;
       }
     }
-
-    // Prepare order data
+  
+    if (!products || products.length === 0 || !cartItems || cartItems.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
+  
+    // Prepare order data dynamically from cart
+    const orderItems = products.map((productRes, index) => {
+      const product = productRes.data.data;
+      const cartItem = cartItems[index];
+      return {
+        productId: product._id,
+        name: product.name,
+        quantity: cartItem.quantity,
+        price: product.offerPrice || product.price,
+        image: product.images?.[0] || "",
+      };
+    });
+  
     const orderData = {
       customer: formData,
       payment: {
@@ -107,16 +207,26 @@ export default function Cart() {
             ? nagadData
             : null,
       },
-      orderTotal: 199.89,
-      items: [
-        { name: "Black Automatic Watch", quantity: 1, price: 169.99 },
-        { name: "Product 2", quantity: 1, price: 29.9 },
-      ],
+      items: orderItems,
+      subtotal: calculateSubtotal(),
+      shipping: 0, // Free shipping
+      orderTotal: calculateSubtotal(),
+      orderDate: new Date().toISOString(),
     };
-
+  
     console.log("Order submitted:", orderData);
-    toast.success("Order placed successfully!");
-    // Here you would typically send this data to your backend
+    
+    try {
+      // Here you would typically send the orderData to your backend API
+      // const response = await axiosInstance.post("/orders/create", orderData);
+      
+      toast.success("Order placed successfully!");
+      // You might want to clear the cart here
+      // navigate to order confirmation page
+    } catch (error) {
+      console.error("Order submission error:", error);
+      toast.error(error.response?.data?.message || "Failed to place order");
+    }
   };
 
   return (
@@ -387,7 +497,7 @@ export default function Cart() {
                   <div className="mb-4">
                     <p className="text-zinc-300">
                       Send{" "}
-                      <span className="text-amber-400 font-bold">$199.89</span>{" "}
+                      <span className="text-amber-400 font-bold">{calculateSubtotal().toFixed(2)}</span>{" "}
                       to:
                     </p>
                     <p className="text-zinc-300">
@@ -453,7 +563,7 @@ export default function Cart() {
                   <div className="mb-4">
                     <p className="text-zinc-300">
                       Send{" "}
-                      <span className="text-amber-400 font-bold">$199.89</span>{" "}
+                      <span className="text-amber-400 font-bold">{calculateSubtotal().toFixed(2)}</span>{" "}
                       to:
                     </p>
                     <p className="text-zinc-300">
@@ -548,9 +658,21 @@ export default function Cart() {
                         </p>
                         <div className="flex items-center gap-2">
                           <button
-                            className="px-2 py-1 border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors"
-                            // onClick={() => updateQuantity(product._id, cartItem.quantity - 1)}
-                            disabled={cartItem.quantity <= 1}
+                            className={`px-2 py-1 cursor-pointer border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors ${
+                              updatingQuantities[product._id]
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleDecreaseQuantity(
+                                product._id,
+                                cartItem.quantity
+                              )
+                            }
+                            disabled={
+                              cartItem.quantity <= 1 ||
+                              updatingQuantities[product._id]
+                            }
                           >
                             -
                           </button>
@@ -558,8 +680,13 @@ export default function Cart() {
                             {cartItem.quantity}
                           </span>
                           <button
-                            className="px-2 py-1 border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors"
-                            // onClick={() => updateQuantity(product._id, cartItem.quantity + 1)}
+                            className={`px-2 py-1 cursor-pointer border border-zinc-600 rounded text-zinc-300 hover:bg-zinc-700 transition-colors ${
+                              updatingQuantities[product._id]
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            onClick={() => handleIncreaseQuantity(product._id)}
+                            disabled={updatingQuantities[product._id]}
                           >
                             +
                           </button>
@@ -571,10 +698,7 @@ export default function Cart() {
                         </p>
                         {product.offerPrice && (
                           <p className="text-xs text-zinc-500 line-through">
-                            $
-                            {(product. price * cartItem.quantity).toFixed(
-                              2
-                            )}
+                            ${(product.price * cartItem.quantity).toFixed(2)}
                           </p>
                         )}
                       </div>
@@ -599,7 +723,7 @@ export default function Cart() {
               <div className="flex justify-between font-semibold text-zinc-200">
                 <span>Order Total</span>
                 <span className="text-amber-400">
-                  {/* ${calculateGrandTotal().toFixed(2)} */}
+                  {calculateSubtotal().toFixed(2)}
                 </span>
               </div>
             </div>
