@@ -12,6 +12,7 @@ import { useAppContext } from "../context/AppContext";
 import { useQuery } from "@tanstack/react-query";
 import { producDetails } from "../api/Api";
 import axiosInstance from "../lib/axios";
+import { FaTrash } from "react-icons/fa";
 
 export default function Cart() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -65,34 +66,34 @@ export default function Cart() {
       return;
     }
 
-    if (currentQuantity <= 1) {
-      // Optionally handle item removal here
-      return;
-    }
-
     setUpdatingQuantities((prev) => ({
       ...prev,
       [productId]: true,
     }));
 
     try {
-      const response = await axiosInstance.post("/cart/decrease-quantity", {
-        productId: productId,
-      });
+      let endpoint = "/cart/decrease-quantity";
+      let payload = { productId };
+
+      // If current quantity is 1, we should remove the item instead
+      if (currentQuantity <= 1) {
+        endpoint = "/cart/remove-from-cart";
+      }
+
+      const response = await axiosInstance.post(endpoint, payload);
 
       if (response.data.success) {
-        // You should update your context/state here with the new cart data
-        // For example, if your API returns the updated cart:
-        // updateCart(response.data.cart);
-        toast.success("Quantity decreased");
+        if (currentQuantity <= 1) {
+          toast.success("Item removed from cart");
+        } else {
+          toast.success("Quantity decreased");
+        }
       } else {
-        throw new Error(response.data.message || "Failed to decrease quantity");
+        throw new Error(response.data.message || "Failed to update quantity");
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to decrease quantity"
-      );
-      console.error("Decrease quantity error:", error);
+      toast.error(error.response?.data?.message || "Failed to update quantity");
+      console.error("Quantity update error:", error);
     } finally {
       setUpdatingQuantities((prev) => ({
         ...prev,
@@ -115,7 +116,7 @@ export default function Cart() {
     },
     enabled: cartItems.length > 0,
   });
-  console.log(products);
+  // console.log(products);
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -147,7 +148,7 @@ export default function Cart() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Validate required fields based on payment method
     if (paymentMethod === "bkash") {
       if (!bkashData.phone || !bkashData.transactionId) {
@@ -160,7 +161,7 @@ export default function Cart() {
         return;
       }
     }
-  
+
     // Basic form validation
     const requiredFields = [
       "phone",
@@ -177,12 +178,17 @@ export default function Cart() {
         return;
       }
     }
-  
-    if (!products || products.length === 0 || !cartItems || cartItems.length === 0) {
+
+    if (
+      !products ||
+      products.length === 0 ||
+      !cartItems ||
+      cartItems.length === 0
+    ) {
       toast.error("Your cart is empty");
       return;
     }
-  
+
     // Prepare order data dynamically from cart
     const orderItems = products.map((productRes, index) => {
       const product = productRes.data.data;
@@ -195,7 +201,7 @@ export default function Cart() {
         image: product.images?.[0] || "",
       };
     });
-  
+
     const orderData = {
       customer: formData,
       payment: {
@@ -213,13 +219,13 @@ export default function Cart() {
       orderTotal: calculateSubtotal(),
       orderDate: new Date().toISOString(),
     };
-  
+
     console.log("Order submitted:", orderData);
-    
+
     try {
       // Here you would typically send the orderData to your backend API
       // const response = await axiosInstance.post("/orders/create", orderData);
-      
+
       toast.success("Order placed successfully!");
       // You might want to clear the cart here
       // navigate to order confirmation page
@@ -497,7 +503,9 @@ export default function Cart() {
                   <div className="mb-4">
                     <p className="text-zinc-300">
                       Send{" "}
-                      <span className="text-amber-400 font-bold">{calculateSubtotal().toFixed(2)}</span>{" "}
+                      <span className="text-amber-400 font-bold">
+                        {calculateSubtotal().toFixed(2)}
+                      </span>{" "}
                       to:
                     </p>
                     <p className="text-zinc-300">
@@ -563,7 +571,9 @@ export default function Cart() {
                   <div className="mb-4">
                     <p className="text-zinc-300">
                       Send{" "}
-                      <span className="text-amber-400 font-bold">{calculateSubtotal().toFixed(2)}</span>{" "}
+                      <span className="text-amber-400 font-bold">
+                        {calculateSubtotal().toFixed(2)}
+                      </span>{" "}
                       to:
                     </p>
                     <p className="text-zinc-300">
@@ -631,11 +641,12 @@ export default function Cart() {
                 </div>
               ) : (
                 products?.map((productRes, index) => {
-                  const product = productRes.data.data; // Access the nested product data
+                  const product = productRes.data.data;
                   const cartItem = cartItems[index];
 
                   return (
                     <div className="flex items-start gap-4" key={product._id}>
+                      {/* Product image */}
                       <div className="w-16 h-16 bg-zinc-700 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
                         {product.images?.[0] ? (
                           <img
@@ -649,6 +660,8 @@ export default function Cart() {
                           </span>
                         )}
                       </div>
+
+                      {/* Product details */}
                       <div className="flex-1">
                         <h3 className="text-sm font-semibold text-zinc-200">
                           {product.name}
@@ -669,10 +682,7 @@ export default function Cart() {
                                 cartItem.quantity
                               )
                             }
-                            disabled={
-                              cartItem.quantity <= 1 ||
-                              updatingQuantities[product._id]
-                            }
+                            disabled={updatingQuantities[product._id]}
                           >
                             -
                           </button>
@@ -690,8 +700,22 @@ export default function Cart() {
                           >
                             +
                           </button>
+
+                          {/* Remove button with trash icon */}
+                          <button
+                            className="ml-2 text-red-400 hover:text-red-300 transition-colors"
+                            onClick={() =>
+                              handleDecreaseQuantity(product._id, 1)
+                            }
+                            disabled={updatingQuantities[product._id]}
+                            title="Remove item"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
+
+                      {/* Product price */}
                       <div className="text-right">
                         <p className="font-semibold text-sm text-amber-400">
                           ${(product.offerPrice * cartItem.quantity).toFixed(2)}
