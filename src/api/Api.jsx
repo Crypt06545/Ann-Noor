@@ -34,3 +34,13 @@ export const getAllUsers = async () => {
     console.log(error);
   }
 };
+
+// get user orders
+export const getOrders = async (email) => {
+  try {
+    const response = await axiosInstance.get(`/users/orders/${email}`);
+    return response;
+  } catch (error) {
+    console.log(error?.response?.data?.message);
+  }
+};

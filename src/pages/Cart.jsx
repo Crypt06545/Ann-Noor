@@ -13,12 +13,14 @@ import { useQuery } from "@tanstack/react-query";
 import { producDetails } from "../api/Api";
 import axiosInstance from "../lib/axios";
 import { FaTrash } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Cart() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [bkashData, setBkashData] = useState({ phone: "", transactionId: "" });
   const [nagadData, setNagadData] = useState({ phone: "", transactionId: "" });
   const { user } = useAppContext();
+  const navigate = useNavigate();
   // console.log(user?.cartItems);
   const [updatingQuantities, setUpdatingQuantities] = useState({});
 
@@ -145,7 +147,6 @@ export default function Cart() {
   };
 
   // updateQuantity
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -217,24 +218,48 @@ export default function Cart() {
       subtotal: calculateSubtotal(),
       shipping: 0, // Free shipping
       orderTotal: calculateSubtotal(),
-      orderDate: new Date().toISOString(),
+      orderDate: new Date().toLocaleString(),
     };
 
-    console.log("Order submitted:", orderData);
+    // console.log("Order submitted:", orderData);
 
     try {
       // Here you would typically send the orderData to your backend API
-      // const response = await axiosInstance.post("/orders/create", orderData);
-
+      const response = await axiosInstance.post("/orders/create", orderData);
+      // console.log(response?.data?.data?.message);
       toast.success("Order placed successfully!");
-      // You might want to clear the cart here
-      // navigate to order confirmation page
+      navigate("/");
     } catch (error) {
       console.error("Order submission error:", error);
       toast.error(error.response?.data?.message || "Failed to place order");
     }
   };
 
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-zinc-900 p-4 md:p-8 lg:p-12 flex items-center justify-center">
+        <div className="max-w-md text-center">
+          <div className="bg-zinc-800 p-8 rounded-lg border border-zinc-700">
+            <div className="flex justify-center mb-4">
+              <FaShoppingCart className="w-12 h-12 text-amber-500 opacity-70" />
+            </div>
+            <h2 className="text-xl font-bold text-amber-500 mb-2">
+              Your Cart is Empty
+            </h2>
+            <p className="text-zinc-400 mb-6">
+              Looks like you haven't added any items to your cart yet.
+            </p>
+            <Link
+              to={"/"}
+              className="inline-block bg-amber-500 hover:bg-amber-400 text-zinc-900 font-semibold py-2 px-6 rounded-md transition-colors"
+            >
+              Browse Products
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-zinc-900 p-4 md:p-8 lg:p-12">
       <div className="max-w-7xl mx-auto">
@@ -383,9 +408,9 @@ export default function Cart() {
                     value={formData.country}
                     onChange={handleChange}
                   >
-                    <option>United States</option>
-                    <option>Canada</option>
-                    <option>United Kingdom</option>
+                    <option>Bangladesh</option>
+                    {/* <option>Canada</option>
+                    <option>United Kingdom</option> */}
                   </select>
                 </div>
                 <div>
@@ -754,8 +779,12 @@ export default function Cart() {
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 font-semibold py-3 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
-              disabled={isLoading || isError}
+              className={`w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 font-semibold py-3 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800 ${
+                isLoading || isError || cartItems.length === 0
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+              disabled={isLoading || isError || cartItems.length === 0}
             >
               {paymentMethod === "cod" ? "Place Order" : "Pay Now"}
             </button>
