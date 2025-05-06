@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { FiEdit, FiTrash2, FiCheckCircle, FiTruck, FiClock, FiXCircle, FiSearch } from 'react-icons/fi';
 import ordersData from '../../../public/dummy-order.json';
 import Pagination from '../../components/Pagination';
+import { useQuery } from '@tanstack/react-query';
+import { getAllOrders } from '../../api/Api';
 
 const Orders = () => {
   const [orders, setOrders] = useState(ordersData);
@@ -11,6 +13,14 @@ const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const ordersPerPage = 5;
+
+
+  const {data} = useQuery({
+    queryKey:['orders'],
+    queryFn:getAllOrders
+  })
+  console.log(data);
+  
 
   // Sort orders by date (newest first) and apply filters
   const sortedAndFilteredOrders = [...orders]

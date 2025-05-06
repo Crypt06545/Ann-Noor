@@ -35,6 +35,15 @@ export const getAllUsers = async () => {
   }
 };
 
+// get all orders
+export const getAllOrders = async () => {
+  try {
+    const response = await axiosInstance.get("/orders/all-orders");
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
 // get user orders
 export const getOrders = async (email) => {
   try {
