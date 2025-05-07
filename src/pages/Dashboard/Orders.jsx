@@ -22,7 +22,9 @@ const Orders = () => {
   console.log(data);
   
 
-  // Sort orders by date (newest first) and apply filters
+  // Sort orders by date (newest first) and apply filter
+
+  
   const sortedAndFilteredOrders = [...orders]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .filter(order => {
