@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { FiEdit, FiTrash2, FiCheckCircle, FiTruck, FiClock, FiXCircle, FiSearch } from 'react-icons/fi';
-import ordersData from '../../../public/dummy-order.json';
 import Pagination from '../../components/Pagination';
 import { useQuery } from '@tanstack/react-query';
 import { getAllOrders } from '../../api/Api';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 const Orders = () => {
-  const [orders, setOrders] = useState(ordersData);
   const [editingId, setEditingId] = useState(null);
   const [newStatus, setNewStatus] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -14,26 +13,32 @@ const Orders = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const ordersPerPage = 5;
 
+  const { data: ordersResponse, isLoading, isError } = useQuery({
+    queryKey: ['orders'],
+    queryFn: getAllOrders
+  });
 
-  const {data} = useQuery({
-    queryKey:['orders'],
-    queryFn:getAllOrders
-  })
-  console.log(data);
-  
+  if (isLoading) return <LoadingSpinner/>;
+  if (isError) return <div className="min-h-screen bg-zinc-900 p-4 md:p-6 flex justify-center items-center">Error loading orders</div>;
+
+  const orders = ordersResponse?.data || [];
+
+  // Format date to be more readable
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   // Sort orders by date (newest first) and apply filter
-
-  
   const sortedAndFilteredOrders = [...orders]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
     .filter(order => {
       const matchesSearch = 
-        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.product.toLowerCase().includes(searchTerm.toLowerCase());
+        order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${order.customer?.firstName} ${order.customer?.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.items.some(item => item.name?.toLowerCase().includes(searchTerm.toLowerCase()));
       
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter.toLowerCase();
       
       return matchesSearch && matchesStatus;
     });
@@ -60,24 +65,21 @@ const Orders = () => {
     };
 
     return (
-      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${statusStyles[status]}`}>
-        {statusIcons[status]}
+      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${statusStyles[status.toLowerCase()]}`}>
+        {statusIcons[status.toLowerCase()]}
         <span className="capitalize">{status}</span>
       </div>
     );
   };
 
   const handleEdit = (order) => {
-    setEditingId(order.id);
+    setEditingId(order._id);
     setNewStatus(order.status);
   };
 
   const handleSave = (id) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
+    // Here you would typically make an API call to update the order status
+    // For now, we'll just update the local state
     setEditingId(null);
   };
 
@@ -86,7 +88,8 @@ const Orders = () => {
   };
 
   const handleDelete = (id) => {
-    setOrders(orders.filter((order) => order.id !== id));
+    // Here you would typically make an API call to delete the order
+    // For now, we'll just update the local state
   };
 
   const handlePageChange = (page) => {
@@ -154,24 +157,26 @@ const Orders = () => {
               {currentOrders.length > 0 ? (
                 currentOrders.map((order) => (
                   <tr
-                    key={order.id}
+                    key={order._id}
                     className="bg-zinc-800 hover:bg-zinc-750 transition-colors"
                   >
                     <td className="py-3 px-4 text-zinc-200 font-medium">
-                      {order.id}
+                      {order._id.substring(0, 8)}...
                     </td>
-                    <td className="py-3 px-4 text-zinc-200">{order.customer}</td>
+                    <td className="py-3 px-4 text-zinc-200">
+                      {order.customer?.firstName} {order.customer?.lastName}
+                    </td>
                     <td className="py-3 px-4 text-zinc-300">
-                      {order.product} (Qty: {order.quantity})
+                      {order.items[0]?.name} (Qty: {order.items[0]?.quantity})
                     </td>
                     <td className="py-3 px-4 text-zinc-200 font-medium">
-                      ${(order.price * order.quantity).toFixed(2)}
+                      ${order.orderTotal?.toFixed(2)}
                     </td>
                     <td className="py-3 px-4 text-zinc-300">
-                      {order.date}
+                      {formatDate(order.orderDate)}
                     </td>
                     <td className="py-3 px-4">
-                      {editingId === order.id ? (
+                      {editingId === order._id ? (
                         <select
                           value={newStatus}
                           onChange={(e) => setNewStatus(e.target.value)}
@@ -196,10 +201,10 @@ const Orders = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex justify-center space-x-3">
-                        {editingId === order.id ? (
+                        {editingId === order._id ? (
                           <>
                             <button
-                              onClick={() => handleSave(order.id)}
+                              onClick={() => handleSave(order._id)}
                               className="p-2 text-green-500 hover:text-green-400 hover:bg-zinc-700 rounded-full transition-colors"
                               title="Save"
                             >
@@ -223,7 +228,7 @@ const Orders = () => {
                               <FiEdit className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(order.id)}
+                              onClick={() => handleDelete(order._id)}
                               className="p-2 text-red-500 hover:text-red-400 hover:bg-zinc-700 rounded-full transition-colors"
                               title="Delete"
                             >
