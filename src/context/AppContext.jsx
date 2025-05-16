@@ -26,7 +26,7 @@ export const AppContextProvider = ({ children }) => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["user"],
     queryFn: fetchUser,
-    refetchInterval:3000,
+    refetchInterval: 5000,
   });
 
   // Sync React Query data with local state
@@ -34,15 +34,16 @@ export const AppContextProvider = ({ children }) => {
     setAuthLoading(isLoading);
 
     if (data) {
-      setUser(data);
+      setUser({
+        ...data,
+        cartItems: data.cartItems || [],
+      });
       setIsAdmin(data.role === "admin");
-      setCartItems(data.cartItems || []);
     }
 
     if (isError) {
       setUser(null);
       setIsAdmin(false);
-      setCartItems([]);
     }
   }, [data, isLoading, isError]);
 
