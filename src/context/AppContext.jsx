@@ -26,7 +26,7 @@ export const AppContextProvider = ({ children }) => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["user"],
     queryFn: fetchUser,
-    refetchInterval:2000,
+    refetchInterval:3000,
   });
 
   // Sync React Query data with local state
