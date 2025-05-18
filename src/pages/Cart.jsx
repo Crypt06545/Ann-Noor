@@ -218,7 +218,7 @@ export default function Cart() {
       subtotal: calculateSubtotal(),
       shipping: 0, // Free shipping
       orderTotal: calculateSubtotal(),
-      orderDate: new Date().toLocaleString(),
+      orderDate: new Date(),
     };
 
     // console.log("Order submitted:", orderData);
@@ -386,7 +386,7 @@ export default function Cart() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-1">
-                    City
+                    City b 0
                   </label>
                   <input
                     type="text"

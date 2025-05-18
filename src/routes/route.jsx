@@ -26,6 +26,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/about-products/:id", element: <ProductDetails /> },
       { path: "/cart", element: <Cart /> },
+
       {
         path: "/shipping-address",
         element: (
@@ -42,6 +43,8 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      { path: "/login", element: <SignIn /> },
+      { path: "/signup", element: <SignUp /> },
     ],
   },
   {
@@ -63,8 +66,6 @@ const router = createBrowserRouter([
       { path: "/dashboard/users", element: <Users /> },
     ],
   },
-  { path: "/login", element: <SignIn /> },
-  { path: "/signup", element: <SignUp /> },
 ]);
 
 export default router;

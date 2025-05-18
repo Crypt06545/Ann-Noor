@@ -1,7 +1,7 @@
 import { useGSAP } from "@gsap/react";
 import React, { useEffect, useState } from "react";
 import { FiShoppingBag } from "react-icons/fi";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
@@ -67,9 +67,9 @@ const Navbar = () => {
   return (
     <nav className="bg-zinc-950 text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-11/12 mx-auto flex justify-between items-center p-4">
-        <h1 className="logo font-robotoSlab text-2xl font-extrabold">
+        <Link to={'/'} className="logo font-robotoSlab text-2xl font-extrabold">
           Ann Noor
-        </h1>
+        </Link>
 
         {/* Desktop Navigation */}
         <ul className="md:flex items-center hidden gap-10">
