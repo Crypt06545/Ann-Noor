@@ -124,6 +124,7 @@ export default function AddProduct() {
       });
 
       toast.success(response.data.message || "Product added successfully!");
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       // console.error("Error:", error.response?.data || error.message);

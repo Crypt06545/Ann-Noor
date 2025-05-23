@@ -2,8 +2,8 @@ import React from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
 
 const WhatsAppFloatingButton = () => {
-  const phoneNumber = '8801719550746';
-  const message = 'Hi! I am interested in your service.';
+  const phoneNumber = '8801872858488';
+  const message = 'Assalamualaikum! I am interested to buy some product';
 
   return (
     <a

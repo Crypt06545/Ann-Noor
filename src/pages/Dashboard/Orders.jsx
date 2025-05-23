@@ -1,52 +1,81 @@
-import React, { useState } from 'react';
-import { FiEdit, FiTrash2, FiCheckCircle, FiTruck, FiClock, FiXCircle, FiSearch } from 'react-icons/fi';
-import Pagination from '../../components/Pagination';
-import { useQuery } from '@tanstack/react-query';
-import { getAllOrders } from '../../api/Api';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
-
+import React, { useState } from "react";
+import {
+  FiEdit,
+  FiTrash2,
+  FiCheckCircle,
+  FiTruck,
+  FiClock,
+  FiXCircle,
+  FiSearch,
+} from "react-icons/fi";
+import Pagination from "../../components/Pagination";
+import { useQuery } from "@tanstack/react-query";
+import { getAllOrders } from "../../api/Api";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
+import axiosInstance from "../../lib/axios";
+import { toast } from "react-hot-toast";
 const Orders = () => {
   const [editingId, setEditingId] = useState(null);
-  const [newStatus, setNewStatus] = useState('');
+  const [newStatus, setNewStatus] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const ordersPerPage = 5;
 
-  const { data: ordersResponse, isLoading, isError } = useQuery({
-    queryKey: ['orders'],
-    queryFn: getAllOrders
+  const {
+    data: ordersResponse,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["orders"],
+    queryFn: getAllOrders,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
-  if (isLoading) return <LoadingSpinner/>;
-  if (isError) return <div className="min-h-screen bg-zinc-900 p-4 md:p-6 flex justify-center items-center">Error loading orders</div>;
+  if (isLoading) return <LoadingSpinner />;
+  if (isError)
+    return (
+      <div className="min-h-screen bg-zinc-900 p-4 md:p-6 flex justify-center items-center">
+        Error loading orders
+      </div>
+    );
 
   const orders = ordersResponse?.data || [];
 
   // Format date to be more readable
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   // Sort orders by date (newest first) and apply filter
   const sortedAndFilteredOrders = [...orders]
     .sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
-    .filter(order => {
-      const matchesSearch = 
+    .filter((order) => {
+      const matchesSearch =
         order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        `${order.customer?.firstName} ${order.customer?.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.items.some(item => item.name?.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter.toLowerCase();
-      
+        `${order.customer?.firstName} ${order.customer?.lastName}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        order.items.some((item) =>
+          item.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        order.status.toLowerCase() === statusFilter.toLowerCase();
+
       return matchesSearch && matchesStatus;
     });
 
   // Get current orders from sorted array
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = sortedAndFilteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = sortedAndFilteredOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder
+  );
   const totalPages = Math.ceil(sortedAndFilteredOrders.length / ordersPerPage);
 
   const StatusBadge = ({ status }) => {
@@ -54,18 +83,22 @@ const Orders = () => {
       delivered: "bg-green-900 text-green-100",
       shipped: "bg-blue-900 text-blue-100",
       pending: "bg-amber-900 text-amber-100",
-      cancelled: "bg-red-900 text-red-100"
+      cancelled: "bg-red-900 text-red-100",
     };
 
     const statusIcons = {
       delivered: <FiCheckCircle className="mr-1" />,
       shipped: <FiTruck className="mr-1" />,
       pending: <FiClock className="mr-1" />,
-      cancelled: <FiXCircle className="mr-1" />
+      cancelled: <FiXCircle className="mr-1" />,
     };
 
     return (
-      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${statusStyles[status.toLowerCase()]}`}>
+      <div
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${
+          statusStyles[status.toLowerCase()]
+        }`}
+      >
         {statusIcons[status.toLowerCase()]}
         <span className="capitalize">{status}</span>
       </div>
@@ -77,10 +110,22 @@ const Orders = () => {
     setNewStatus(order.status);
   };
 
-  const handleSave = (id) => {
-    // Here you would typically make an API call to update the order status
-    // For now, we'll just update the local state
-    setEditingId(null);
+  const handleSave = async (id, newStatus) => {
+    console.log(id, newStatus);
+    try {
+      const { data } = await axiosInstance.patch(
+        `/orders/update-order-status/${id}`,
+        { status: newStatus }
+      );
+      console.log(data);
+      toast.success(data?.message);
+      setEditingId(null);
+    } catch (error) {
+      console.log(error);
+      toast.error('Failed to Update Status!!')
+    } finally {
+      setEditingId(null);
+    }
   };
 
   const handleCancel = () => {
@@ -103,7 +148,7 @@ const Orders = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-amber-500">
             Orders Management
           </h1>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <div className="relative flex-grow">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -120,7 +165,7 @@ const Orders = () => {
                 }}
               />
             </div>
-            
+
             <div className="relative">
               <select
                 value={statusFilter}
@@ -144,13 +189,27 @@ const Orders = () => {
           <table className="w-full">
             <thead className="bg-zinc-800">
               <tr>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">Order ID</th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">Customer</th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">Product</th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">Total</th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">Date</th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">Status</th>
-                <th className="py-3 px-4 text-center text-amber-500 font-medium">Actions</th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">
+                  Order ID
+                </th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">
+                  Customer
+                </th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">
+                  Product
+                </th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">
+                  Total
+                </th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">
+                  Date
+                </th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">
+                  Status
+                </th>
+                <th className="py-3 px-4 text-center text-amber-500 font-medium">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-700">
@@ -204,7 +263,7 @@ const Orders = () => {
                         {editingId === order._id ? (
                           <>
                             <button
-                              onClick={() => handleSave(order._id)}
+                              onClick={() => handleSave(order._id, newStatus)}
                               className="p-2 text-green-500 hover:text-green-400 hover:bg-zinc-700 rounded-full transition-colors"
                               title="Save"
                             >
@@ -242,7 +301,10 @@ const Orders = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="py-4 px-4 text-center text-zinc-400">
+                  <td
+                    colSpan="7"
+                    className="py-4 px-4 text-center text-zinc-400"
+                  >
                     No orders found matching your criteria
                   </td>
                 </tr>
