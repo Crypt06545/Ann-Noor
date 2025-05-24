@@ -5,7 +5,7 @@ const BkashPayment = ({ amount, currency }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const onSubmit = (data) => {
-    console.log("Bkash payment submitted:", data);
+    // console.log("Bkash payment submitted:", data);
     // Handle payment submission
   };
 

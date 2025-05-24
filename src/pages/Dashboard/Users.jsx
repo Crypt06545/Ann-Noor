@@ -175,7 +175,7 @@ const Users = () => {
                       >
                         <option value="admin">Admin</option>
                         <option value="customer">Customer</option>
-                        <option value="user">User</option>
+                        {/* <option value="user">User</option> */}
                       </select>
                     ) : (
                       <div className="flex items-center">

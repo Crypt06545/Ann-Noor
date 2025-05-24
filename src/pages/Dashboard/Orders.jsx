@@ -14,12 +14,14 @@ import { getAllOrders } from "../../api/Api";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import axiosInstance from "../../lib/axios";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 const Orders = () => {
   const [editingId, setEditingId] = useState(null);
   const [newStatus, setNewStatus] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const navigate = useNavigate();
   const ordersPerPage = 5;
 
   const {
@@ -120,9 +122,10 @@ const Orders = () => {
       console.log(data);
       toast.success(data?.message);
       setEditingId(null);
+      navigate("/dashboard");
     } catch (error) {
       console.log(error);
-      toast.error('Failed to Update Status!!')
+      toast.error("Failed to Update Status!!");
     } finally {
       setEditingId(null);
     }
@@ -132,9 +135,21 @@ const Orders = () => {
     setEditingId(null);
   };
 
-  const handleDelete = (id) => {
-    // Here you would typically make an API call to delete the order
-    // For now, we'll just update the local state
+  const handleDelete = async (id) => {
+    try {
+      const { data } = await axiosInstance.delete(`/orders/delete/${id}`);
+      console.log(data?.message);
+      toast.success(data?.message || "Order deleted successfully");
+      navigate("/dashboard");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to delete order";
+      toast.error(errorMessage);
+      console.error("Delete error:", error);
+    }
   };
 
   const handlePageChange = (page) => {
