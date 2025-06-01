@@ -7,6 +7,8 @@ import {
   FiClock,
   FiXCircle,
   FiSearch,
+  FiDollarSign,
+  FiCreditCard,
 } from "react-icons/fi";
 import Pagination from "../../components/Pagination";
 import { useQuery } from "@tanstack/react-query";
@@ -15,9 +17,12 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import axiosInstance from "../../lib/axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+
 const Orders = () => {
   const [editingId, setEditingId] = useState(null);
+  const [editingPaymentId, setEditingPaymentId] = useState(null);
   const [newStatus, setNewStatus] = useState("");
+  const [newPaymentStatus, setNewPaymentStatus] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -28,6 +33,7 @@ const Orders = () => {
     data: ordersResponse,
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["orders"],
     queryFn: getAllOrders,
@@ -45,13 +51,11 @@ const Orders = () => {
 
   const orders = ordersResponse?.data || [];
 
-  // Format date to be more readable
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Sort orders by date (newest first) and apply filter
   const sortedAndFilteredOrders = [...orders]
     .sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
     .filter((order) => {
@@ -71,7 +75,6 @@ const Orders = () => {
       return matchesSearch && matchesStatus;
     });
 
-  // Get current orders from sorted array
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = sortedAndFilteredOrders.slice(
@@ -107,48 +110,85 @@ const Orders = () => {
     );
   };
 
-  const handleEdit = (order) => {
-    setEditingId(order._id);
-    setNewStatus(order.status);
+  const PaymentBadge = ({ isPaid }) => {
+    const paymentStyles = {
+      true: "bg-green-900 text-green-100",
+      false: "bg-red-900 text-red-100",
+    };
+
+    const paymentIcons = {
+      true: <FiCreditCard className="mr-1" />,
+      false: <FiDollarSign className="mr-1" />,
+    };
+
+    return (
+      <div
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${
+          paymentStyles[isPaid]
+        }`}
+      >
+        {paymentIcons[isPaid]}
+        <span>{isPaid ? "Paid" : "Unpaid"}</span>
+      </div>
+    );
   };
 
-  const handleSave = async (id, newStatus) => {
-    console.log(id, newStatus);
+  const handleEditStatus = (order) => {
+    setEditingId(order._id);
+    setNewStatus(order.status);
+    setEditingPaymentId(null); // Close payment edit if open
+  };
+
+  const handleEditPayment = (order) => {
+    setEditingPaymentId(order._id);
+    setNewPaymentStatus(order.isPaid);
+    setEditingId(null); // Close status edit if open
+  };
+
+  const handleSaveStatus = async (id) => {
     try {
-      const { data } = await axiosInstance.patch(
-        `/orders/update-order-status/${id}`,
-        { status: newStatus }
-      );
-      console.log(data);
-      toast.success(data?.message);
-      setEditingId(null);
-      navigate("/dashboard");
+      await axiosInstance.patch(`/orders/update-order-status/${id}`, {
+        status: newStatus,
+      });
+      toast.success("Order status updated successfully");
+      refetch();
     } catch (error) {
-      console.log(error);
-      toast.error("Failed to Update Status!!");
+      toast.error("Failed to update order status");
+      console.error(error);
     } finally {
       setEditingId(null);
     }
   };
 
-  const handleCancel = () => {
+  const handleSavePayment = async (id) => {
+    try {
+      await axiosInstance.patch(`/orders/update-payment-status/${id}`, {
+        isPaid: newPaymentStatus,
+      });
+      toast.success("Payment status updated successfully");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to update payment status");
+      console.error(error);
+    } finally {
+      setEditingPaymentId(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
     setEditingId(null);
+    setEditingPaymentId(null);
   };
 
   const handleDelete = async (id) => {
     try {
-      const { data } = await axiosInstance.delete(`/orders/delete/${id}`);
-      console.log(data?.message);
-      toast.success(data?.message || "Order deleted successfully");
-      navigate("/dashboard");
+      await axiosInstance.delete(`/orders/delete/${id}`);
+      toast.success("Order deleted successfully");
+      refetch();
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        "Failed to delete order";
-      toast.error(errorMessage);
-      console.error("Delete error:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to delete order"
+      );
     }
   };
 
@@ -204,27 +244,14 @@ const Orders = () => {
           <table className="w-full">
             <thead className="bg-zinc-800">
               <tr>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">
-                  Order ID
-                </th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">
-                  Customer
-                </th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">
-                  Product
-                </th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">
-                  Total
-                </th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">
-                  Date
-                </th>
-                <th className="py-3 px-4 text-left text-amber-500 font-medium">
-                  Status
-                </th>
-                <th className="py-3 px-4 text-center text-amber-500 font-medium">
-                  Actions
-                </th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">Order ID</th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">Customer</th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">Product</th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">Total</th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">Date</th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">Status</th>
+                <th className="py-3 px-4 text-left text-amber-500 font-medium">Payment</th>
+                <th className="py-3 px-4 text-center text-amber-500 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-700">
@@ -256,36 +283,46 @@ const Orders = () => {
                           onChange={(e) => setNewStatus(e.target.value)}
                           className="bg-zinc-700 border border-zinc-600 text-zinc-200 rounded-md px-3 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500"
                         >
-                          <option value="pending" className="bg-zinc-800">
-                            Pending
-                          </option>
-                          <option value="shipped" className="bg-zinc-800">
-                            Shipped
-                          </option>
-                          <option value="delivered" className="bg-zinc-800">
-                            Delivered
-                          </option>
-                          <option value="cancelled" className="bg-zinc-800">
-                            Cancelled
-                          </option>
+                          <option value="pending">Pending</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
                         </select>
                       ) : (
                         <StatusBadge status={order.status} />
                       )}
                     </td>
                     <td className="py-3 px-4">
+                      {editingPaymentId === order._id ? (
+                        <select
+                          value={newPaymentStatus}
+                          onChange={(e) => setNewPaymentStatus(e.target.value === "true")}
+                          className="bg-zinc-700 border border-zinc-600 text-zinc-200 rounded-md px-3 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        >
+                          <option value="true">Paid</option>
+                          <option value="false">Unpaid</option>
+                        </select>
+                      ) : (
+                        <PaymentBadge isPaid={order.isPaid} />
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
                       <div className="flex justify-center space-x-3">
-                        {editingId === order._id ? (
+                        {editingId === order._id || editingPaymentId === order._id ? (
                           <>
                             <button
-                              onClick={() => handleSave(order._id, newStatus)}
+                              onClick={() => 
+                                editingId === order._id 
+                                  ? handleSaveStatus(order._id) 
+                                  : handleSavePayment(order._id)
+                              }
                               className="p-2 text-green-500 hover:text-green-400 hover:bg-zinc-700 rounded-full transition-colors"
                               title="Save"
                             >
                               <FiCheckCircle className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={handleCancel}
+                              onClick={handleCancelEdit}
                               className="p-2 text-red-500 hover:text-red-400 hover:bg-zinc-700 rounded-full transition-colors"
                               title="Cancel"
                             >
@@ -295,11 +332,18 @@ const Orders = () => {
                         ) : (
                           <>
                             <button
-                              onClick={() => handleEdit(order)}
+                              onClick={() => handleEditStatus(order)}
                               className="p-2 text-blue-400 hover:text-blue-300 hover:bg-zinc-700 rounded-full transition-colors"
-                              title="Edit"
+                              title="Edit Status"
                             >
                               <FiEdit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEditPayment(order)}
+                              className="p-2 text-purple-400 hover:text-purple-300 hover:bg-zinc-700 rounded-full transition-colors"
+                              title="Edit Payment"
+                            >
+                              <FiCreditCard className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(order._id)}
@@ -317,7 +361,7 @@ const Orders = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="py-4 px-4 text-center text-zinc-400"
                   >
                     No orders found matching your criteria
@@ -328,7 +372,6 @@ const Orders = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="mt-6">
           <Pagination
             currentPage={currentPage}

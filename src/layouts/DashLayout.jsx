@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { 
   MdAddBox, 
   MdInventory,
@@ -52,6 +52,9 @@ const DashLayout = () => {
           <button onClick={()=>{handleLogOut()}} className="border cursor-pointer border-amber-500 rounded-full text-sm px-4 py-1 text-amber-500 hover:bg-amber-500/10 transition-colors">
             Logout
           </button>
+          <Link to={'/'}  className="border cursor-pointer border-amber-500 rounded-full text-sm px-4 py-1 text-amber-500 hover:bg-amber-500/10 transition-colors">
+            Home
+          </Link>
         </div>
       </div>
 
